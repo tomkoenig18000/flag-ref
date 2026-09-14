@@ -237,8 +237,9 @@
   /* ---------- slide to confirm ----------
      Guards against pocket touches: the action only fires when the knob is
      dragged most of the way across. */
-  .slide { position: relative; height: 68px; border-radius: 34px; background: var(--surface2); border: 2px solid var(--line); overflow: hidden; touch-action: none; user-select: none; -webkit-user-select: none; }
-  .slide .slide-label { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding-left: 56px; font-family: var(--display); font-weight: 800; font-size: 22px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); transition: opacity .15s; pointer-events: none; }
+  .slide { position: relative; height: 68px; border-radius: 34px; background: var(--surface2); border: 2px solid var(--line); overflow: hidden; touch-action: none; user-select: none; -webkit-user-select: none; container-type: inline-size; }
+  /* label sits in the space between the knob and the chevrons and scales with the slider's own width */
+  .slide .slide-label { position: absolute; inset: 0; padding: 0 52px 0 68px; display: flex; align-items: center; justify-content: center; white-space: nowrap; overflow: hidden; font-family: var(--display); font-weight: 800; font-size: clamp(14px, 6.2cqw, 22px); letter-spacing: .05em; text-transform: uppercase; color: var(--muted); transition: opacity .15s; pointer-events: none; }
   .slide .slide-label small { font-family: var(--body); font-weight: 600; font-size: 14px; letter-spacing: 0; text-transform: none; opacity: .75; margin-left: 8px; }
   .slide .slide-knob { position: absolute; top: 4px; left: 4px; width: 56px; height: 56px; border-radius: 50%; background: var(--chalk-bg); color: var(--chalk-ink); display: grid; place-items: center; font-size: 30px; font-weight: 700; line-height: 1; box-shadow: 0 3px 10px rgba(0,0,0,.35); cursor: grab; transition: transform .18s ease; will-change: transform; }
   .slide .slide-knob::after { content: "›"; }
@@ -250,7 +251,7 @@
   .slide.stop .slide-knob { background: var(--danger); color: #FFFFFF; }
   .slide.stop { border-color: color-mix(in srgb, var(--danger) 55%, var(--line)); }
   .slide.stop .slide-label { color: var(--ink); }
-  .slide .slide-hint { position: absolute; right: 18px; top: 0; bottom: 0; display: flex; align-items: center; color: var(--muted); font-size: 22px; letter-spacing: -2px; opacity: .6; pointer-events: none; }
+  .slide .slide-hint { position: absolute; right: 16px; top: 0; bottom: 0; width: 30px; display: flex; align-items: center; justify-content: flex-end; color: var(--muted); font-size: 22px; letter-spacing: -2px; opacity: .6; pointer-events: none; }
 
   /* ---------- modal ---------- */
   .modal-root { position: fixed; inset: 0; display: none; z-index: 50; }
@@ -319,7 +320,7 @@
       <svg viewBox="0 0 44 44" aria-hidden="true"><rect x="2" y="2" width="40" height="40" rx="10" fill="var(--surface2)"/><path d="M13 9v27" stroke="var(--ink)" stroke-width="3" stroke-linecap="round"/><path d="M15 10h16l-4 6 4 6H15z" fill="var(--yellow)"/><path d="M15 23h13l-3 5 3 5H15z" fill="var(--blue)"/></svg>
       <div><h1>Flag Ref</h1><div class="eyebrow">Point Grey Cup · UBC Rec</div></div>
     </div>
-    <button class="link" data-act="diagnostics" style="padding:4px 0">v12</button>
+    <button class="link" data-act="diagnostics" style="padding:4px 0">v13</button>
   </div>
   <button class="sync" id="sync" data-state="saving" data-act="diagnostics">Connecting to your account…</button>
   <div id="resumeWrap"></div>
@@ -411,7 +412,7 @@
     <div class="pre" id="clockPre"></div>
     <div class="sub" id="clockSub"></div>
   </button>
-  <div class="slide stop" id="stopSlide" data-slide="stopClockConfirmed" hidden><div class="slide-label">Slide to stop the clock</div><div class="slide-hint">›››</div><div class="slide-knob"></div></div>
+  <div class="slide stop" id="stopSlide" data-slide="stopClockConfirmed" hidden><div class="slide-label">Slide to stop clock</div><div class="slide-hint">›››</div><div class="slide-knob"></div></div>
 
   <div class="teams">
     <div class="team" id="team0" data-flag="yellow">
@@ -460,7 +461,7 @@
      right away, failures are shown on the board, and a finished game is
      only cleared once the cloud has confirmed it. Clock state is
      timestamps, so a running clock never generates writes by itself. */
-  const VERSION = 12;
+  const VERSION = 13;
   // Inside the Claude viewer the page has window.claude and can use the account store;
   // as a standalone home-screen app (GitHub Pages) phone storage is first-party and durable.
   const IN_VIEWER = !!(window.claude && typeof window.claude.use === 'function');
@@ -713,7 +714,7 @@
     const p = $('clockPre'); p.textContent = pre; p.dataset.kind = preKind;
     // Outside stop time a running clock is stopped by sliding, never by a tap.
     const needSlide = game.status === 'live' && run && state !== 'stoptime';
-    if ($('stopSlide').hidden !== !needSlide) { $('stopSlide').hidden = !needSlide; resetSlide($('stopSlide')); }
+    if ($('stopSlide').hidden !== !needSlide) { $('stopSlide').hidden = !needSlide; resetSlide($('stopSlide')); if (needSlide) fitSlideLabels(); }
     if (needSlide && !sub) $('clockSub').textContent = 'Slide below to stop';
   }
 
@@ -724,6 +725,7 @@
     sheet.className = 'sheet' + (opts.full ? ' full' : '');
     sheet.innerHTML = html; sheet.scrollTop = 0; document.body.scrollTop = 0;
     $('modal').classList.add('open');
+    if (sheet.querySelector('.slide')) fitSlideLabels();
   }
   function closeModal() { modalLock = false; $('modal').classList.remove('open'); $('sheet').innerHTML = ''; }
 
@@ -1276,6 +1278,14 @@
 
   /* ---------- slide-to-confirm engine ---------- */
   function resetSlide(el) { el.classList.remove('dragging', 'done'); const k = el.querySelector('.slide-knob'); if (k) k.style.transform = ''; }
+  function fitSlideLabels() {
+    document.querySelectorAll('.slide .slide-label').forEach((l) => {
+      l.style.fontSize = '';
+      let size = parseFloat(getComputedStyle(l).fontSize) || 22;
+      for (let i = 0; i < 8 && l.scrollWidth > l.clientWidth && size > 12; i++) { size -= 1; l.style.fontSize = size + 'px'; }
+    });
+  }
+  window.addEventListener('resize', () => setTimeout(fitSlideLabels, 60));
   let drag = null;
   function slideAxisDelta(e) {
     // Under the portrait-lock rotation the slider's visual x-axis is the device's y-axis.
