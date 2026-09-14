@@ -320,7 +320,7 @@
       <svg viewBox="0 0 44 44" aria-hidden="true"><rect x="2" y="2" width="40" height="40" rx="10" fill="var(--surface2)"/><path d="M13 9v27" stroke="var(--ink)" stroke-width="3" stroke-linecap="round"/><path d="M15 10h16l-4 6 4 6H15z" fill="var(--yellow)"/><path d="M15 23h13l-3 5 3 5H15z" fill="var(--blue)"/></svg>
       <div><h1>Flag Ref</h1><div class="eyebrow">Point Grey Cup · UBC Rec</div></div>
     </div>
-    <button class="link" data-act="diagnostics" style="padding:4px 0">v13</button>
+    <button class="link" data-act="diagnostics" style="padding:4px 0">v14</button>
   </div>
   <button class="sync" id="sync" data-state="saving" data-act="diagnostics">Connecting to your account…</button>
   <div id="resumeWrap"></div>
@@ -461,7 +461,7 @@
      right away, failures are shown on the board, and a finished game is
      only cleared once the cloud has confirmed it. Clock state is
      timestamps, so a running clock never generates writes by itself. */
-  const VERSION = 13;
+  const VERSION = 14;
   // Inside the Claude viewer the page has window.claude and can use the account store;
   // as a standalone home-screen app (GitHub Pages) phone storage is first-party and durable.
   const IN_VIEWER = !!(window.claude && typeof window.claude.use === 'function');
@@ -700,7 +700,7 @@
     let state = run ? 'running' : 'stopped';
     let status, sub = '', pre = '', preKind = '';
     const within14 = Math.abs(game.teams[0].score - game.teams[1].score) <= 14;
-    if (game.status === 'halftime') { status = 'Tap to start 2nd half'; sub = game.teams[other(game.kickoff)].name + ' kicks off'; }
+    if (game.status === 'halftime') { status = 'Halftime'; sub = game.teams[other(game.kickoff)].name + ' kicks off · tap for the 2nd-half slide'; }
     else if (game.status === 'over') { status = 'Final'; sub = 'Open the menu to finish and save'; }
     else if (isStopTime(game)) { state = 'stoptime'; status = run ? 'Stop time · running' : 'Stop time · stopped'; sub = 'Within 14 — stop on incompletions, out of bounds, first downs, scores.'; }
     else if (ms <= 60000 && game.half === 2) { status = run ? 'Running' : 'Stopped'; pre = 'Clock runs — up by more than 14'; preKind = 'run'; }
@@ -751,8 +751,8 @@
       <div class="card"><div class="eyebrow">2nd half kickoff</div>
         <div style="font-size:20px"><b>${esc(t[other(k)].name)}</b> kicks off · <b>${esc(t[k].name)}</b> receives</div></div>
       ${awayNote(game)}
-      <div class="hint" style="text-align:center">Tap at the kickoff — this starts the 2nd-half clock.</div>
-      <button class="btn primary huge" data-act="startHalf2">Start 2nd half</button>
+      <div class="hint" style="text-align:center">Slide at the kickoff — this starts the 2nd-half clock.</div>
+      ${slideHtml('startHalf2', 'Slide to start 2nd half')}
       <div class="row"><button class="link" data-act="close">Not yet</button><button class="link" data-act="adjustClockRevive">Set the clock instead</button></div>`);
   }
 
@@ -764,7 +764,7 @@
       ${awayNote(game)}
       <div class="err" id="finishErr"></div>
       <div class="stack">
-        <button class="btn primary huge" data-act="finish" id="finishBtn">Save &amp; finish</button>
+        ${slideHtml('finish', 'Slide to save &amp; finish')}
         <button class="btn" data-act="share">Share score</button>
       </div>
       <div class="row"><button class="link" data-act="close">Not yet — still playing</button><button class="link" data-act="adjustClockRevive">Set the clock instead</button></div>`);
@@ -789,7 +789,7 @@
         <button class="btn" data-act="showLog">Scoring log</button>
         <button class="btn" data-act="rules">Quick rules</button>
         ${game.status === 'live' ? `<button class="btn" data-act="endHalf">${game.half === 1 ? 'End 1st half now' : 'End game now'}</button>` : ''}
-        ${game.status === 'halftime' ? '<button class="btn" data-act="startHalf2">Start 2nd half</button>' : ''}
+        ${game.status === 'halftime' ? '<button class="btn" data-act="halftimeModal">Start 2nd half</button>' : ''}
         ${game.status === 'over' ? '<button class="btn primary" data-act="finalModal">Finish &amp; save</button>' : ''}
         <button class="btn" data-act="share">Share score</button>
         <button class="btn" data-act="diagnostics">Diagnostics &amp; backup</button>
@@ -799,13 +799,15 @@
       <button class="link" data-act="close">Close</button>`);
   }
 
+  let adjStaged = [0, 0];
   function adjustModal() {
-    const game = g(); const t = game.teams;
+    const game = g(); const t = game.teams; adjStaged = [t[0].score, t[1].score];
     openModal(`<div class="eyebrow">Adjust score</div>
       <div class="adj">${[0, 1].map((i) => `<div class="box"><div class="n">${esc(t[i].name)}</div><div class="s num" id="adj${i}">${t[i].score}</div>
         <div class="row"><button class="btn" data-act="adj" data-team="${i}" data-d="-1">−1</button><button class="btn" data-act="adj" data-team="${i}" data-d="1">+1</button></div></div>`).join('')}</div>
-      <div class="hint">Each tap is logged as an adjustment.</div>
-      <button class="btn primary" data-act="close">Done</button>`);
+      <div class="hint" id="adjHint">Nothing changed yet. Tap ±1, then slide to apply.</div>
+      ${slideHtml('adjustApply', 'Slide to apply')}
+      <button class="link" data-act="close">Cancel</button>`);
   }
 
   let reviveOnSet = false;
@@ -816,7 +818,8 @@
     openModal(`<div class="eyebrow">Set clock</div>
       <div class="time-in"><input type="number" id="setMin" inputmode="numeric" min="0" max="60" value="${Math.floor(s / 60)}"><span class="colon">:</span><input type="number" id="setSec" inputmode="numeric" min="0" max="59" value="${s % 60}"></div>
       <div class="hint">${note}</div>
-      <div class="row"><button class="btn ghost" data-act="close">Cancel</button><button class="btn primary" data-act="applyClock">Set</button></div>`);
+      ${slideHtml('applyClock', 'Slide to set clock')}
+      <button class="link" data-act="close">Cancel</button>`);
   }
 
   function logModal(game, opts = {}) {
@@ -979,7 +982,11 @@
   }
   function confirmModal(title, body, actLabel, act, danger) {
     openModal(`<h2>${title}</h2><div class="muted">${body}</div>
-      <div class="row"><button class="btn ghost" data-act="close">Cancel</button><button class="btn ${danger ? 'danger' : 'primary'}" data-act="${act}">${actLabel}</button></div>`);
+      ${slideHtml(act, actLabel, danger ? 'stop' : 'primary')}
+      <button class="link" data-act="close">Cancel</button>`);
+  }
+  function slideHtml(act, label, kind = 'primary', extra = '') {
+    return `<div class="slide ${kind}" data-slide="${act}" ${extra}><div class="slide-label">${label}</div><div class="slide-hint">›››</div><div class="slide-knob"></div></div>`;
   }
 
   /* ---------- share ---------- */
@@ -1109,7 +1116,7 @@
 
     toggleClock(d, force) {
       unlockAudio(); const game = g();
-      if (game.status === 'halftime') { actions.startHalf2(); return; }
+      if (game.status === 'halftime') { halftimeModal(); return; }
       if (game.status === 'over') { finalModal(); return; }
       if (running(game)) {
         if (!force && !isStopTime(game)) { toast('Slide below to stop the clock'); return; }
@@ -1139,6 +1146,15 @@
     },
     undoTD() { const game = g(); const p = game.pending; if (!p) { closeModal(); return; } game.teams[p.team].score -= 6; game.log.pop(); game.pending = null; save(); closeModal(); renderBoard(); toast('Touchdown removed'); showPendingBanner(); },
     undo() {
+      const game = g(); const last = game.log[game.log.length - 1]; if (!last) return;
+      const l = logLine(game, last);
+      openModal(`<div class="eyebrow">Undo last play</div>
+        <div class="card"><div style="font-size:20px"><b>${esc(l.text)}</b> <span class="num">${l.pts}</span></div><div class="muted num">${l.stamp}</div></div>
+        ${slideHtml('undoConfirm', 'Slide to undo', 'stop')}
+        <button class="link" data-act="close">Keep it</button>`);
+    },
+    undoConfirm() {
+      closeModal();
       const game = g(); const last = game.log.pop(); if (!last) return;
       game.teams[last.team].score -= last.pts;
       if (last.type === 'td') game.pending = null;
@@ -1146,7 +1162,17 @@
       save(); renderBoard(); toast('Undid: ' + game.teams[last.team].name + ' ' + LABEL[last.type]);
       if (game.pending) conversionModal();
     },
-    adj(d) { const game = g(); const i = Number(d.team); const dd = Number(d.d); if (game.teams[i].score + dd < 0) return; game.teams[i].score += dd; addLog(game, { team: i, type: 'adjust', pts: dd }); save(); $('adj' + i).textContent = game.teams[i].score; renderBoard(); },
+    adj(d) {
+      const game = g(); const i = Number(d.team); const dd = Number(d.d);
+      if (adjStaged[i] + dd < 0) return; adjStaged[i] += dd; $('adj' + i).textContent = adjStaged[i];
+      const diffs = [0, 1].map((k) => adjStaged[k] - game.teams[k].score);
+      $('adjHint').textContent = diffs.every((x) => x === 0) ? 'Nothing changed yet. Tap ±1, then slide to apply.' : 'Pending: ' + [0, 1].filter((k) => diffs[k]).map((k) => game.teams[k].name + ' ' + (diffs[k] > 0 ? '+' : '') + diffs[k]).join(', ');
+    },
+    adjustApply() {
+      const game = g(); let changed = false;
+      [0, 1].forEach((i) => { const dd = adjStaged[i] - game.teams[i].score; if (dd) { game.teams[i].score += dd; addLog(game, { team: i, type: 'adjust', pts: dd }); changed = true; } });
+      if (changed) save(); closeModal(); renderBoard(); showPendingBanner(); toast(changed ? 'Score adjusted' : 'No change');
+    },
     adjustScore() { adjustModal(); },
     adjustClock() { clockModal(false); },
     adjustClockRevive() { clockModal(true); },
@@ -1160,9 +1186,9 @@
     showLog() { logModal(g()); },
     menu() { menuModal(); },
     finalModal() { finalModal(); },
+    halftimeModal() { closeModal(); halftimeModal(); },
     share() { share(g()); },
     async finish() {
-      const btn = $('finishBtn'); if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }
       if (dbState === 'pending') await cloudReady;      // the cloud may restore a different game meanwhile
       const game = g(); if (!game || !$('modal').classList.contains('open')) { closeModal(); renderHome(); show('home'); return; }
       stopClock(game); game.status = 'final'; game.endedAt = game.endedAt || Date.now(); game.pending = null;
@@ -1180,7 +1206,6 @@
         S.games = S.games.filter((x) => x.id !== game.id);
         game.status = 'over'; S.current = game; S.updatedAt = Date.now(); localSave(); setSync('error');
         const err = $('finishErr'); if (err) err.textContent = "Couldn't save to your account (" + ((lastSyncError && lastSyncError.code) || 'no connection') + "). Nothing is lost — try again in a moment.";
-        if (btn) { btn.disabled = false; btn.textContent = 'Try again'; }
         queueSync(3000); return;
       }
       closeModal(); renderHome(); show('home'); setSync(DB ? 'synced' : 'local'); toast('Game saved');
