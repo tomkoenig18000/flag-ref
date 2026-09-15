@@ -253,6 +253,18 @@
   .slide.stop .slide-label { color: var(--ink); }
   .slide .slide-hint { position: absolute; right: 16px; top: 0; bottom: 0; width: 30px; display: flex; align-items: center; justify-content: flex-end; color: var(--muted); font-size: 22px; letter-spacing: -2px; opacity: .6; pointer-events: none; }
 
+  /* ---------- fair play ratings ---------- */
+  .fp { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px; display: grid; gap: 10px; }
+  .fp .fp-title { font-family: var(--display); font-weight: 800; font-size: 18px; letter-spacing: .03em; text-transform: uppercase; }
+  .fp .fp-title b { color: var(--accent); }
+  .fp .fp-scale { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+  .fp .fp-scale button { height: 52px; border-radius: 12px; background: var(--surface2); border: 2px solid var(--line); color: var(--ink); font-family: var(--display); font-weight: 800; font-size: 24px; }
+  .fp .fp-scale button[aria-pressed="true"] { background: var(--chalk-bg); color: var(--chalk-ink); border-color: var(--chalk-bg); }
+  .fp input { width: 100%; font: 16px/1.3 var(--body); padding: 10px 12px; border-radius: 10px; border: 2px solid var(--line); background: var(--surface2); color: var(--ink); }
+  .fp .fp-legend { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); padding: 0 4px; }
+  .fp-summary { display: grid; gap: 4px; font-size: 15px; }
+  .fp-summary b { font-family: var(--display); font-size: 18px; }
+
   /* ---------- modal ---------- */
   .modal-root { position: fixed; inset: 0; display: none; z-index: 50; }
   .modal-root.open { display: block; }
@@ -320,7 +332,7 @@
       <svg viewBox="0 0 44 44" aria-hidden="true"><rect x="2" y="2" width="40" height="40" rx="10" fill="var(--surface2)"/><path d="M13 9v27" stroke="var(--ink)" stroke-width="3" stroke-linecap="round"/><path d="M15 10h16l-4 6 4 6H15z" fill="var(--yellow)"/><path d="M15 23h13l-3 5 3 5H15z" fill="var(--blue)"/></svg>
       <div><h1>Flag Ref</h1><div class="eyebrow">Point Grey Cup · UBC Rec</div></div>
     </div>
-    <button class="link" data-act="diagnostics" style="padding:4px 0">v14</button>
+    <button class="link" data-act="diagnostics" style="padding:4px 0">v15</button>
   </div>
   <button class="sync" id="sync" data-state="saving" data-act="diagnostics">Connecting to your account…</button>
   <div id="resumeWrap"></div>
@@ -461,7 +473,7 @@
      right away, failures are shown on the board, and a finished game is
      only cleared once the cloud has confirmed it. Clock state is
      timestamps, so a running clock never generates writes by itself. */
-  const VERSION = 14;
+  const VERSION = 15;
   // Inside the Claude viewer the page has window.claude and can use the account store;
   // as a standalone home-screen app (GitHub Pages) phone storage is first-party and durable.
   const IN_VIEWER = !!(window.claude && typeof window.claude.use === 'function');
@@ -558,10 +570,14 @@
       id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), createdAt: Date.now(), startedAt: null, endedAt: null,
       teams: [{ name: '', flag: 'yellow', score: 0 }, { name: '', flag: 'blue', score: 0 }],
       kickoff: null, halfMin: hm, half: 1, status: 'setup',   // setup | ready | live | halftime | over
-      clock: { remaining: hm * 60000, since: null }, log: [], pending: null, warned: false
+      clock: { remaining: hm * 60000, since: null }, log: [], pending: null, warned: false,
+      // fairPlay[i] = the 1–5 fair-play score team i RECEIVED from the other team (IM requirement), plus a comment
+      fairPlay: [{ score: null, note: '' }, { score: null, note: '' }]
     };
   }
   const g = () => S.current;
+  const fairPlayOf = (game) => { if (!game.fairPlay) game.fairPlay = [{ score: null, note: '' }, { score: null, note: '' }]; return game.fairPlay; };
+  const fairPlayComplete = (game) => fairPlayOf(game).every((x) => x.score >= 1);
   const other = (i) => 1 - i;
   const remainingMs = (game) => game.clock.since ? Math.max(0, game.clock.remaining - (Date.now() - game.clock.since)) : game.clock.remaining;
   const running = (game) => !!game.clock.since;
@@ -756,15 +772,27 @@
       <div class="row"><button class="link" data-act="close">Not yet</button><button class="link" data-act="adjustClockRevive">Set the clock instead</button></div>`);
   }
 
+  function fairPlayHtml(game) {
+    const t = game.teams; const fp = fairPlayOf(game);
+    return [0, 1].map((to) => `<div class="fp">
+      <div class="fp-title">${esc(t[other(to)].name)} rates <b>${esc(t[to].name)}</b></div>
+      <div class="fp-scale">${[1, 2, 3, 4, 5].map((n) => `<button type="button" data-act="fpScore" data-to="${to}" data-score="${n}" aria-pressed="${fp[to].score === n}">${n}</button>`).join('')}</div>
+      <div class="fp-legend"><span>1 · poor</span><span>5 · excellent</span></div>
+      <input type="text" id="fpNote${to}" data-to="${to}" placeholder="Comment (optional)" value="${esc(fp[to].note || '')}" maxlength="200" autocomplete="off">
+    </div>`).join('');
+  }
   function finalModal() {
     bannerPending = false;
     const game = g();
+    const complete = fairPlayComplete(game);
     openModal(`<div class="eyebrow">Final</div>
       ${scoreBlock(game)}
       ${awayNote(game)}
+      <div class="eyebrow">Fair play · each team rates the other</div>
+      ${fairPlayHtml(game)}
       <div class="err" id="finishErr"></div>
-      <div class="stack">
-        ${slideHtml('finish', 'Slide to save &amp; finish')}
+      <div class="stack" id="finishWrap">
+        ${complete ? slideHtml('finish', 'Slide to save &amp; finish') : '<div class="hint" style="text-align:center">Enter both fair play scores to finish. <button class="link" data-act="finishWithoutFP" style="display:inline;padding:0">Finish without them</button></div>'}
         <button class="btn" data-act="share">Share score</button>
       </div>
       <div class="row"><button class="link" data-act="close">Not yet — still playing</button><button class="link" data-act="adjustClockRevive">Set the clock instead</button></div>`);
@@ -824,8 +852,11 @@
 
   function logModal(game, opts = {}) {
     const rows = game.log.length ? game.log.map((e) => { const l = logLine(game, e); return `<div><span class="t">${l.stamp}</span><span>${esc(l.text)}</span><span class="p num">${l.pts}</span></div>`; }).join('') : '<div class="empty">No scoring yet</div>';
+    const fp = game.fairPlay; const t = game.teams;
+    const fpBlock = fp && (fp[0].score || fp[1].score) ? `<div class="eyebrow">Fair play</div><div class="card fp-summary">${[0, 1].map((i) => `<div><b>${fp[i].score || '—'}</b> · ${esc(t[i].name)}${fp[i].note ? ' — ' + esc(fp[i].note) : ''} <span class="muted">(by ${esc(t[other(i)].name)})</span></div>`).join('')}</div>` : '';
     openModal(`<div class="eyebrow">${opts.title || 'Scoring log'}</div>
       ${scoreBlock(game)}
+      ${fpBlock}
       <div class="log">${rows}</div>
       ${opts.footer || '<button class="btn primary" data-act="close">Close</button>'}`);
   }
@@ -999,6 +1030,11 @@
       game.status !== 'over' && game.status !== 'final' ? '(in progress)' : 'FINAL'
     ];
     if (game.log.length) { lines.push('', 'Scoring:'); game.log.forEach((e) => { const l = logLine(game, e); lines.push(`${l.stamp}  ${l.text}  ${l.pts}`); }); }
+    const fp = game.fairPlay;
+    if (fp && (fp[0].score || fp[1].score)) {
+      lines.push('', 'Fair play (1–5):');
+      [0, 1].forEach((i) => lines.push(`${t[i].name}: ${fp[i].score || '—'}${fp[i].note ? '  "' + fp[i].note + '"' : ''}  (rated by ${t[other(i)].name})`));
+    }
     return lines.join('\n');
   }
   async function share(game) {
@@ -1186,6 +1222,18 @@
     showLog() { logModal(g()); },
     menu() { menuModal(); },
     finalModal() { finalModal(); },
+    fpScore(d) {
+      const game = g(); if (!game) return; const to = Number(d.to); const n = Number(d.score);
+      const fp = fairPlayOf(game); fp[to].score = fp[to].score === n ? null : n; save();
+      $('sheet').querySelectorAll(`[data-act="fpScore"][data-to="${to}"]`).forEach((b) => b.setAttribute('aria-pressed', String(Number(b.dataset.score) === fp[to].score)));
+      // reveal or hide the finish slide as the ratings become complete
+      const wrap = $('finishWrap'); if (!wrap) return;
+      const has = !!wrap.querySelector('[data-slide="finish"]'); const complete = fairPlayComplete(game);
+      if (complete && !has) { wrap.insertAdjacentHTML('afterbegin', slideHtml('finish', 'Slide to save &amp; finish')); fitSlideLabels(); }
+      else if (!complete && has) { wrap.querySelector('[data-slide="finish"]').outerHTML = '<div class="hint" style="text-align:center">Enter both fair play scores to finish. <button class="link" data-act="finishWithoutFP" style="display:inline;padding:0">Finish without them</button></div>'; }
+      else if (complete) wrap.querySelector('.hint') && wrap.querySelector('.hint').remove();
+    },
+    finishWithoutFP() { confirmModal('Finish without fair play scores?', 'IM requires each team to rate the other after every game. Only skip this if a team has already left.', 'Finish anyway', 'finish', true); },
     halftimeModal() { closeModal(); halftimeModal(); },
     share() { share(g()); },
     async finish() {
@@ -1255,6 +1303,10 @@
     game.teams[0].name = $('name0').value; game.teams[1].name = $('name1').value;
     game.halfMin = Number($('halfMin').value) || 0;
   }
+  document.addEventListener('input', (e) => {
+    const el = e.target; if (!el || !el.id || !el.id.startsWith('fpNote')) return;
+    const game = g(); if (!game) return; fairPlayOf(game)[Number(el.dataset.to)].note = el.value.slice(0, 200); save();
+  });
   ['name0', 'name1', 'halfMin'].forEach((id) => $(id).addEventListener('input', () => { readSetup(); save(); $('kick0').textContent = g().teams[0].name || 'Team 1'; $('kick1').textContent = g().teams[1].name || 'Team 2'; }));
 
   /* ---------- portrait lock ---------- */
