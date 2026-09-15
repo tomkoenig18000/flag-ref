@@ -332,7 +332,7 @@
       <svg viewBox="0 0 44 44" aria-hidden="true"><rect x="2" y="2" width="40" height="40" rx="10" fill="var(--surface2)"/><path d="M13 9v27" stroke="var(--ink)" stroke-width="3" stroke-linecap="round"/><path d="M15 10h16l-4 6 4 6H15z" fill="var(--yellow)"/><path d="M15 23h13l-3 5 3 5H15z" fill="var(--blue)"/></svg>
       <div><h1>Flag Ref</h1><div class="eyebrow">Point Grey Cup · UBC Rec</div></div>
     </div>
-    <button class="link" data-act="diagnostics" style="padding:4px 0">v15</button>
+    <button class="link" data-act="diagnostics" style="padding:4px 0">v16</button>
   </div>
   <button class="sync" id="sync" data-state="saving" data-act="diagnostics">Connecting to your account…</button>
   <div id="resumeWrap"></div>
@@ -473,7 +473,7 @@
      right away, failures are shown on the board, and a finished game is
      only cleared once the cloud has confirmed it. Clock state is
      timestamps, so a running clock never generates writes by itself. */
-  const VERSION = 15;
+  const VERSION = 16;
   // Inside the Claude viewer the page has window.claude and can use the account store;
   // as a standalone home-screen app (GitHub Pages) phone storage is first-party and durable.
   const IN_VIEWER = !!(window.claude && typeof window.claude.use === 'function');
@@ -1229,9 +1229,9 @@
       // reveal or hide the finish slide as the ratings become complete
       const wrap = $('finishWrap'); if (!wrap) return;
       const has = !!wrap.querySelector('[data-slide="finish"]'); const complete = fairPlayComplete(game);
-      if (complete && !has) { wrap.insertAdjacentHTML('afterbegin', slideHtml('finish', 'Slide to save &amp; finish')); fitSlideLabels(); }
+      const hint = wrap.querySelector('.hint');
+      if (complete && !has) { if (hint) hint.remove(); wrap.insertAdjacentHTML('afterbegin', slideHtml('finish', 'Slide to save &amp; finish')); fitSlideLabels(); }
       else if (!complete && has) { wrap.querySelector('[data-slide="finish"]').outerHTML = '<div class="hint" style="text-align:center">Enter both fair play scores to finish. <button class="link" data-act="finishWithoutFP" style="display:inline;padding:0">Finish without them</button></div>'; }
-      else if (complete) wrap.querySelector('.hint') && wrap.querySelector('.hint').remove();
     },
     finishWithoutFP() { confirmModal('Finish without fair play scores?', 'IM requires each team to rate the other after every game. Only skip this if a team has already left.', 'Finish anyway', 'finish', true); },
     halftimeModal() { closeModal(); halftimeModal(); },
