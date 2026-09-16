@@ -1,5 +1,5 @@
-// Flag Ref service worker — v17
-const CACHE = 'flagref-v17';
+// Flag Ref service worker — v18
+const CACHE = 'flagref-v18';
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/apple-touch-icon.png'];
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));

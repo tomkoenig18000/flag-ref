@@ -313,7 +313,7 @@
       <svg viewBox="0 0 44 44" aria-hidden="true"><rect x="2" y="2" width="40" height="40" rx="10" fill="var(--surface2)"/><path d="M13 9v27" stroke="var(--ink)" stroke-width="3" stroke-linecap="round"/><path d="M15 10h16l-4 6 4 6H15z" fill="var(--yellow)"/><path d="M15 23h13l-3 5 3 5H15z" fill="var(--blue)"/></svg>
       <div><h1>Flag Ref</h1><div class="eyebrow">Point Grey Cup · UBC Rec</div></div>
     </div>
-    <button class="link" data-act="diagnostics" style="padding:4px 0">v17</button>
+    <button class="link" data-act="diagnostics" style="padding:4px 0">v18</button>
   </div>
   <button class="sync" id="sync" data-state="saving" data-act="diagnostics">Connecting to your account…</button>
   <div id="resumeWrap"></div>
@@ -360,6 +360,7 @@
   <div class="field">
     <label for="halfMin">Half length (minutes)</label>
     <input type="number" id="halfMin" inputmode="numeric" min="1" max="60" value="20" style="max-width:120px">
+    <div class="hint">20 by default. Shorten it if the game starts late — finishing inside the hour is the priority this year.</div>
   </div>
 
   <div class="spacer"></div>
@@ -454,7 +455,7 @@
      right away, failures are shown on the board, and a finished game is
      only cleared once the cloud has confirmed it. Clock state is
      timestamps, so a running clock never generates writes by itself. */
-  const VERSION = 17;
+  const VERSION = 18;
   // Inside the Claude viewer the page has window.claude and can use the account store;
   // as a standalone home-screen app (GitHub Pages) phone storage is first-party and durable.
   const IN_VIEWER = !!(window.claude && typeof window.claude.use === 'function');
@@ -871,7 +872,7 @@
 <li><b>Catch = control with one foot in bounds.</b> <b>Down = anything but a foot touches the ground</b>, including a hand.</li>
 <li><b>Scoring:</b> TD 6 · convert 1 from the 5 (pass) or 2 from the 10 (run or pass) · safety 2. A convert picked off and returned is 2 the other way.</li>
 <li><b>Kickoff out of bounds → receivers' ball at their 15.</b> Kickoffs from the kicker's 15; you can punt on any down.</li>
-<li><b>Clock:</b> two 20-minute halves, running, plus stop time in the last minute of the game if it's within 14. One 30-second time-out per half; it stops the clock.</li>
+<li><b>Clock:</b> two 20-minute halves (shorter if we need to finish on time), running, plus stop time in the last minute of the game if it's within 14. One 30-second time-out per half; it stops the clock.</li>
 <li>Mixed: max 3 self-identifying males on the field. Need 5 to start, 6 max, can finish with 4.</li>
 </ul></div></details>
 
@@ -884,15 +885,16 @@
 </ul></div></details>
 
 <details><summary>Timing &amp; stop time</summary><div class="body"><ul>
-<li><b>Two 20-minute halves,</b> running clock.</li>
+<li><b>Two 20-minute halves,</b> running clock. <b>Halves can be shortened to finish inside the hour</b> — finishing on time is a big focus this year. Set the half length on the setup screen before kickoff.</li>
 <li><b>Stop time: last minute of the 2nd half only, and only if the differential is 14 or less</b> (and time permits). Then the clock stops on: touchdown · ball out of bounds · time-outs (team or official) · penalties · incomplete pass · injury · until the ref has placed the markers.</li>
 <li>In stop time, an <b>offensive penalty runs 10 seconds off</b>; an offensive penalty in the <b>last 10 seconds ends the game</b>.</li>
 <li>A half doesn't end until the ball is dead and penalties are resolved. <b>TD on the last play of either half → the convert is still played</b> at 0:00.</li>
 <li><b>Time-outs:</b> one 30-second time-out per team per half; they don't carry over.</li>
 <li>Officials may shorten or abandon games for scheduling or safety.</li>
+<div class="house"><em>How we call it</em> <b>Stop a running clock only for a major delay</b> — a significant injury, the ball stuck in a bush or on a roof. Substitutions, ordinary time-wasting and quick injuries don't stop it.</div>
 <div class="house"><em>How we call it</em> <b>A time-out always stops the clock</b>, running time or not — that's the only reason anyone calls one.</div>
 <div class="house"><em>How we call it</em> <b>The clock never runs during a convert in stop time.</b> Stop it on the touchdown; start it again on the kickoff.</div>
-<div class="house"><em>How we call it</em> We don't add time back for substitutions, injuries or time-wasting (rulebook 4c allows it "when possible"; in practice, never).</div>
+<div class="house"><em>How we call it</em> We don't add time back after the fact (rulebook 4c allows it "when possible"; in practice, never) — stop the clock during the delay instead.</div>
 </ul></div></details>
 
 <details><summary>Kickoffs &amp; punts</summary><div class="body"><ul>

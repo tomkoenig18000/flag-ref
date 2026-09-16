@@ -14,6 +14,10 @@ going to Caden by email.
   long as they aren't early. **Once the receiver has control it's a catch** — any further
   ripping or excessive contact is **unnecessary roughness** (10 yd). Early = PI. Roughly the
   college "control" standard, then hands off.
+- **Finishing on time is the focus this year.** The 20-minute halves may be shortened so the
+  game ends inside the hour — set the half length in the app before kickoff.
+- **Stop a running clock only for a major delay** — a significant injury, ball stuck in a
+  bush or on a roof. Nothing else stops running time; we don't add time back afterwards.
 - **Fair play ratings** weren't mentioned at training — the app requires both before a game
   can be finished. Ask Caden whether IM still wants them and where they go.
 
