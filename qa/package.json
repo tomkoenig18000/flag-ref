@@ -1,0 +1,1 @@
+{ "name": "flag-ref-qa", "private": true, "scripts": { "test": "node regress.js", "smoke": "node smoke.js" }, "dependencies": { "jsdom": "^24.0.0" } }

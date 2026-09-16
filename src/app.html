@@ -1,0 +1,1408 @@
+<title>Flag Ref</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Flag Ref">
+<meta name="theme-color" content="#002145">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;800&family=Barlow:wght@400;500;600;700&display=swap">
+<style>
+  /* ---------- tokens: dark-first ---------- */
+  /* UBC brand palette: UBC Blue #002145 primary; secondary blues
+     #0055B7 #00A7E1 #40B4E5 #6EC4E8 #97D4E9. Flag yellow is the real
+     flag colour, not a brand colour. */
+  :root {
+    --bg: #001A38;
+    --surface: #002145;
+    --surface2: #0A3468;
+    --line: #1B4A85;
+    --ink: #FFFFFF;
+    --muted: #97D4E9;
+    --chalk-bg: #FFFFFF;
+    --chalk-ink: #002145;
+    --accent: #40B4E5;
+    --yellow: #FFC72C;
+    --on-yellow: #002145;
+    --blue: #0055B7;
+    --on-blue: #FFFFFF;
+    --good: #3DD68C;
+    --warn: #FF9A3D;
+    --danger: #E5533D;
+    --on-danger: #FFFFFF;
+    --shadow: 0 10px 30px rgba(0,10,30,.55);
+    --display: "Barlow Condensed", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+    --body: "Barlow", -apple-system, "Helvetica Neue", Arial, sans-serif;
+    color-scheme: dark;
+  }
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      --bg: #F1F6FB; --surface: #FFFFFF; --surface2: #DEEAF6; --line: #BFD3E8;
+      --ink: #002145; --muted: #3F6791; --chalk-bg: #002145; --chalk-ink: #FFFFFF;
+      --accent: #0055B7; --good: #1E9E63; --warn: #E07A1F;
+      --shadow: 0 10px 30px rgba(0,33,69,.15); color-scheme: light;
+    }
+  }
+  :root[data-theme="light"] {
+    --bg: #F1F6FB; --surface: #FFFFFF; --surface2: #DEEAF6; --line: #BFD3E8;
+    --ink: #002145; --muted: #3F6791; --chalk-bg: #002145; --chalk-ink: #FFFFFF;
+    --accent: #0055B7; --good: #1E9E63; --warn: #E07A1F;
+    --shadow: 0 10px 30px rgba(0,33,69,.15); color-scheme: light;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: var(--body); font-size: 17px; line-height: 1.35;
+    -webkit-text-size-adjust: 100%; -webkit-tap-highlight-color: transparent;
+    overscroll-behavior: none; -webkit-user-select: none; user-select: none;
+  }
+  input, textarea { -webkit-user-select: text; user-select: text; }
+  button { font: inherit; color: inherit; border: 0; background: none; padding: 0; margin: 0; touch-action: manipulation; cursor: pointer; }
+  button:focus-visible, input:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+
+  .screen {
+    min-height: 100vh; min-height: 100dvh; max-width: 520px; margin: 0 auto;
+    display: flex; flex-direction: column; gap: 16px;
+    padding: calc(14px + env(safe-area-inset-top)) 16px calc(20px + env(safe-area-inset-bottom));
+  }
+  .eyebrow { font-family: var(--display); font-weight: 600; font-size: 14px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+  h1, h2 { font-family: var(--display); font-weight: 800; margin: 0; line-height: 1; text-wrap: balance; }
+  h1 { font-size: 44px; letter-spacing: -.01em; }
+  h2 { font-size: 28px; }
+  .muted { color: var(--muted); }
+  .num { font-variant-numeric: tabular-nums; }
+
+  /* ---------- buttons ---------- */
+  .btn {
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    min-height: 60px; padding: 12px 18px; border-radius: 14px;
+    font-family: var(--display); font-weight: 800; font-size: 24px; letter-spacing: .04em; text-transform: uppercase;
+    background: var(--surface2); color: var(--ink); transition: transform .06s ease, filter .12s ease;
+  }
+  .btn:active { transform: scale(.975); filter: brightness(.92); }
+  .btn.primary { background: var(--chalk-bg); color: var(--chalk-ink); }
+  .btn.huge { min-height: 96px; font-size: 34px; }
+  .btn.yellow { background: var(--yellow); color: var(--on-yellow); }
+  .btn.blue { background: var(--blue); color: var(--on-blue); }
+  .btn.danger { background: var(--danger); color: var(--on-danger); }
+  .btn.ghost { background: transparent; border: 2px solid var(--line); }
+  .btn.small { min-height: 44px; font-size: 18px; padding: 8px 14px; border-radius: 10px; }
+  .btn:disabled { opacity: .35; }
+  .link { font-family: var(--body); font-weight: 600; font-size: 16px; color: var(--muted); text-decoration: underline; text-underline-offset: 3px; padding: 10px; }
+  .row { display: flex; gap: 10px; }
+  .row > * { flex: 1; }
+  .stack { display: flex; flex-direction: column; gap: 10px; }
+  .spacer { flex: 1; }
+
+  /* ---------- home ---------- */
+  .brand { display: flex; align-items: baseline; justify-content: space-between; }
+  .lockup { display: flex; align-items: center; gap: 12px; }
+  .lockup svg { width: 44px; height: 44px; flex: none; }
+  .lockup .eyebrow { color: var(--accent); margin-top: 2px; }
+  .card { background: var(--surface); border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+  .card.resume { border: 2px solid var(--good); }
+  .gamelist { display: flex; flex-direction: column; gap: 8px; }
+  .game {
+    display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; align-items: center;
+    width: 100%; text-align: left; background: var(--surface); border-radius: 12px; padding: 12px 14px;
+  }
+  .game .teams { font-family: var(--display); font-weight: 600; font-size: 22px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .game .score { font-family: var(--display); font-weight: 800; font-size: 28px; }
+  .game .when { grid-column: 1 / -1; font-size: 14px; color: var(--muted); }
+  .dot { display: inline-block; width: 12px; height: 12px; border-radius: 50%; }
+  .dot.yellow { background: var(--yellow); } .dot.blue { background: var(--blue); }
+  .empty { color: var(--muted); padding: 24px 0; text-align: center; }
+  .wk { display: flex; align-items: baseline; justify-content: space-between; margin-top: 6px; }
+  .wk .eyebrow { color: var(--accent); }
+  .wk .dates { font-size: 13px; color: var(--muted); }
+  .rules { display: flex; flex-direction: column; gap: 6px; }
+  .rules details { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; }
+  .rules summary { list-style: none; cursor: pointer; padding: 12px 14px; font-family: var(--display); font-weight: 800; font-size: 20px; letter-spacing: .02em; text-transform: uppercase; display: flex; justify-content: space-between; align-items: center; }
+  .rules summary::-webkit-details-marker { display: none; }
+  .rules summary::after { content: "+"; color: var(--muted); font-size: 24px; }
+  .rules details[open] summary::after { content: "–"; }
+  .rules .body { padding: 0 14px 14px; font-size: 16px; line-height: 1.4; -webkit-user-select: text; user-select: text; }
+  .rules .body ul { margin: 0; padding-left: 18px; }
+  .rules .body li { margin: 4px 0; }
+  .rules .body b { color: var(--accent); }
+  .rules .body h4 { font-family: var(--display); font-weight: 800; font-size: 15px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin: 12px 0 4px; }
+  .rules .house { border-left: 4px solid var(--yellow); padding-left: 10px; margin: 8px 0; color: var(--ink); }
+  .rules .house em { font-style: normal; font-family: var(--display); font-weight: 800; letter-spacing: .08em; text-transform: uppercase; font-size: 13px; color: var(--yellow); }
+  .rules a { color: var(--accent); }
+  .sync { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; color: var(--muted); }
+  .sync::before { content: ""; width: 9px; height: 9px; border-radius: 50%; background: var(--muted); }
+  .sync[data-state="synced"]::before { background: var(--good); }
+  .sync[data-state="saving"]::before { background: var(--warn); animation: pulse 1s ease-in-out infinite; }
+  .sync[data-state="error"]::before { background: var(--danger); }
+
+  /* ---------- setup ---------- */
+  .field { display: flex; flex-direction: column; gap: 8px; }
+  .field label { font-size: 15px; font-weight: 600; color: var(--muted); }
+  input[type="text"], input[type="number"] {
+    width: 100%; font: inherit; font-size: 22px; font-weight: 600; color: var(--ink);
+    background: var(--surface); border: 2px solid var(--line); border-radius: 12px; padding: 12px 14px;
+  }
+  input[type="text"]:focus, input[type="number"]:focus { border-color: var(--ink); outline: none; }
+  .teamsetup { border-left: 6px solid var(--line); padding-left: 12px; }
+  .teamsetup[data-flag="yellow"] { border-color: var(--yellow); }
+  .teamsetup[data-flag="blue"] { border-color: var(--blue); }
+  .seg { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; background: var(--surface); border-radius: 12px; padding: 5px; }
+  .seg button { min-height: 48px; border-radius: 8px; font-family: var(--display); font-weight: 800; font-size: 20px; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
+  .seg button[aria-pressed="true"] { color: var(--ink); background: var(--surface2); }
+  .seg button.yellow[aria-pressed="true"] { background: var(--yellow); color: var(--on-yellow); }
+  .seg button.blue[aria-pressed="true"] { background: var(--blue); color: var(--on-blue); }
+  .seg.kick button[aria-pressed="true"] { background: var(--chalk-bg); color: var(--chalk-ink); }
+  .hint { font-size: 14px; color: var(--muted); }
+  .err { color: var(--danger); font-weight: 600; font-size: 15px; min-height: 1.4em; }
+
+  /* ---------- ready ---------- */
+  .matchup { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 10px; text-align: center; }
+  .matchup .t { font-family: var(--display); font-weight: 800; font-size: 30px; line-height: 1.05; overflow-wrap: anywhere; }
+  .matchup .vs { font-family: var(--display); color: var(--muted); font-size: 20px; }
+  .chip { display: inline-flex; align-items: center; gap: 6px; font-family: var(--display); font-weight: 600; font-size: 14px; letter-spacing: .1em; text-transform: uppercase; padding: 3px 9px; border-radius: 999px; background: var(--surface2); color: var(--ink); }
+  .chip.yellow { background: var(--yellow); color: var(--on-yellow); } .chip.blue { background: var(--blue); color: var(--on-blue); }
+
+  /* ---------- board ---------- */
+  .board { gap: 12px; }
+  .topbar { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 10px; }
+  .topbar .center { text-align: center; font-size: 14px; color: var(--muted); font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .pill { font-family: var(--display); font-weight: 800; font-size: 15px; letter-spacing: .1em; text-transform: uppercase; padding: 5px 10px; border-radius: 8px; background: var(--surface2); }
+  .iconbtn { width: 44px; height: 44px; border-radius: 10px; background: var(--surface2); font-size: 22px; font-weight: 700; display: grid; place-items: center; }
+
+  .clock {
+    width: 100%; background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); border-radius: 20px; padding: 14px 16px 16px;
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    border: 3px solid transparent; transition: border-color .15s ease, background .15s ease;
+  }
+  .clock[data-state="running"] { border-color: var(--good); box-shadow: none; }
+  .clock[data-state="stoptime"] { border-color: var(--warn); box-shadow: none; }
+  /* stop time: the whole block changes colour — amber = running, red = stopped */
+  .clock[data-state="stoptime"][data-running="true"] { background: var(--warn); border-color: var(--warn); color: #002145; }
+  .clock[data-state="stoptime"][data-running="false"] { background: var(--danger); border-color: var(--danger); color: #FFFFFF; }
+  .clock[data-state="stoptime"][data-running] .digits, .clock[data-state="stoptime"][data-running] .status, .clock[data-state="stoptime"][data-running] .sub { color: inherit; }
+  .clock .pre { display: none; margin-top: 6px; padding: 5px 12px; border-radius: 999px; font-family: var(--display); font-weight: 800; font-size: 15px; letter-spacing: .08em; text-transform: uppercase; }
+  .clock .pre[data-kind="stop"] { display: inline-block; background: var(--warn); color: #002145; }
+  .clock .pre[data-kind="run"] { display: inline-block; background: var(--surface2); color: var(--muted); }
+  .strip { width: 100%; background: var(--danger); color: #FFFFFF; font-weight: 700; font-size: 15px; padding: 10px 12px; border-radius: 10px; text-align: left; }
+  .strip[data-state="local"] { background: var(--warn); color: #002145; }
+  .sdot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: var(--muted); margin-right: 6px; vertical-align: middle; }
+  .sdot[data-state="synced"] { background: var(--good); } .sdot[data-state="saving"] { background: var(--warn); } .sdot[data-state="error"], .sdot[data-state="local"] { background: var(--danger); }
+  .alert { position: fixed; inset: 0; z-index: 70; display: grid; place-items: center; text-align: center; padding: 24px; background: var(--warn); color: #002145; cursor: pointer; }
+  .alert[data-kind="run"] { background: var(--accent); color: #002145; }
+  .alert[data-kind="off"] { background: var(--surface2); color: var(--ink); }
+  .alert h2 { font-size: clamp(56px, 18vw, 96px); line-height: .95; }
+  .alert .eyebrow, .alert .hint { color: inherit; opacity: .8; }
+  .alert .body { font-size: 20px; font-weight: 600; margin-top: 10px; }
+  .diag { font-size: 15px; display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; }
+  .diag b { color: var(--muted); font-weight: 600; }
+  .diag code { font-family: ui-monospace, Menlo, monospace; font-size: 13px; overflow-wrap: anywhere; }
+  .clock .digits { font-family: var(--display); font-weight: 800; font-size: clamp(84px, 30vw, 150px); line-height: .9; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+  .clock .status { display: flex; align-items: center; gap: 8px; font-family: var(--display); font-weight: 800; font-size: 20px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+  .clock[data-running="true"] .status { color: var(--good); }
+  .clock .status .led { width: 12px; height: 12px; border-radius: 50%; background: currentColor; }
+  .clock[data-running="true"] .status .led { animation: pulse 1s ease-in-out infinite; }
+  @keyframes pulse { 50% { opacity: .25; } }
+  .clock .sub { font-size: 13px; color: var(--muted); font-weight: 600; }
+
+  .teams { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .team { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; overflow: hidden; display: flex; flex-direction: column; }
+  .team .head { padding: 10px 12px; font-family: var(--display); font-weight: 800; font-size: 22px; line-height: 1.05; text-transform: uppercase; letter-spacing: .02em; overflow-wrap: anywhere; min-height: 52px; display: flex; align-items: center; }
+  .team[data-flag="yellow"] .head { background: var(--yellow); color: var(--on-yellow); box-shadow: inset 0 -3px 0 #D18F00; }
+  .team[data-flag="blue"] .head { background: var(--blue); color: var(--on-blue); box-shadow: inset 0 -3px 0 var(--accent); }
+  .team .score { font-family: var(--display); font-weight: 800; font-size: clamp(72px, 24vw, 120px); line-height: 1; text-align: center; padding: 10px 0 6px; font-variant-numeric: tabular-nums; }
+  .team .td { margin: 0 10px 10px; min-height: 84px; border-radius: 14px; font-size: 32px; }
+  .team[data-flag="yellow"] .td { background: var(--yellow); color: var(--on-yellow); }
+  .team[data-flag="blue"] .td { background: var(--blue); color: var(--on-blue); }
+  .team .td small { display: block; font-size: 15px; letter-spacing: .12em; font-weight: 600; }
+
+  .lastplay { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; background: var(--surface); border-radius: 12px; padding: 10px 12px; min-height: 56px; }
+  .lastplay .txt { font-size: 15px; color: var(--muted); font-weight: 600; }
+  .lastplay .txt b { color: var(--ink); }
+
+  /* ---------- slide to confirm ----------
+     Guards against pocket touches: the action only fires when the knob is
+     dragged most of the way across. */
+  .slide { position: relative; height: 68px; border-radius: 34px; background: var(--surface2); border: 2px solid var(--line); overflow: hidden; touch-action: none; user-select: none; -webkit-user-select: none; container-type: inline-size; }
+  /* label sits in the space between the knob and the chevrons and scales with the slider's own width */
+  .slide .slide-label { position: absolute; inset: 0; padding: 0 52px 0 68px; display: flex; align-items: center; justify-content: center; white-space: nowrap; overflow: hidden; font-family: var(--display); font-weight: 800; font-size: clamp(14px, 6.2cqw, 22px); letter-spacing: .05em; text-transform: uppercase; color: var(--muted); transition: opacity .15s; pointer-events: none; }
+  .slide .slide-label small { font-family: var(--body); font-weight: 600; font-size: 14px; letter-spacing: 0; text-transform: none; opacity: .75; margin-left: 8px; }
+  .slide .slide-knob { position: absolute; top: 4px; left: 4px; width: 56px; height: 56px; border-radius: 50%; background: var(--chalk-bg); color: var(--chalk-ink); display: grid; place-items: center; font-size: 30px; font-weight: 700; line-height: 1; box-shadow: 0 3px 10px rgba(0,0,0,.35); cursor: grab; transition: transform .18s ease; will-change: transform; }
+  .slide .slide-knob::after { content: "›"; }
+  .slide.dragging .slide-knob { transition: none; }
+  .slide.dragging .slide-label { opacity: .35; }
+  .slide.done { background: var(--good); border-color: var(--good); }
+  .slide.done .slide-label { color: #002145; opacity: 1; }
+  .slide.ghost .slide-knob { background: var(--surface); color: var(--ink); border: 2px solid var(--line); }
+  .slide.stop .slide-knob { background: var(--danger); color: #FFFFFF; }
+  .slide.stop { border-color: color-mix(in srgb, var(--danger) 55%, var(--line)); }
+  .slide.stop .slide-label { color: var(--ink); }
+  .slide .slide-hint { position: absolute; right: 16px; top: 0; bottom: 0; width: 30px; display: flex; align-items: center; justify-content: flex-end; color: var(--muted); font-size: 22px; letter-spacing: -2px; opacity: .6; pointer-events: none; }
+
+  /* ---------- fair play ratings ---------- */
+  .fp { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px; display: grid; gap: 10px; }
+  .fp .fp-title { font-family: var(--display); font-weight: 800; font-size: 18px; letter-spacing: .03em; text-transform: uppercase; }
+  .fp .fp-title b { color: var(--accent); }
+  .fp .fp-scale { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+  .fp .fp-scale button { height: 52px; border-radius: 12px; background: var(--surface2); border: 2px solid var(--line); color: var(--ink); font-family: var(--display); font-weight: 800; font-size: 24px; }
+  .fp .fp-scale button[aria-pressed="true"] { background: var(--chalk-bg); color: var(--chalk-ink); border-color: var(--chalk-bg); }
+  .fp input { width: 100%; font: 16px/1.3 var(--body); padding: 10px 12px; border-radius: 10px; border: 2px solid var(--line); background: var(--surface2); color: var(--ink); }
+  .fp .fp-legend { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); padding: 0 4px; }
+  .fp-summary { display: grid; gap: 4px; font-size: 15px; }
+  .fp-summary b { font-family: var(--display); font-size: 18px; }
+
+  /* ---------- modal ---------- */
+  .modal-root { position: fixed; inset: 0; display: none; z-index: 50; }
+  .modal-root.open { display: block; }
+  .scrim { position: absolute; inset: 0; background: rgba(0,0,0,.55); }
+  .sheet {
+    position: absolute; left: 0; right: 0; bottom: 0; max-width: 520px; margin: 0 auto;
+    background: var(--bg); border-radius: 22px 22px 0 0; box-shadow: var(--shadow);
+    padding: 18px 16px calc(18px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; gap: 12px;
+    max-height: 92vh; max-height: 92dvh; overflow-y: auto;
+  }
+  .sheet.full { top: 0; border-radius: 0; max-height: none; padding-top: calc(18px + env(safe-area-inset-top)); }
+  .sheet .banner { margin: -18px -16px 4px; padding: calc(18px + env(safe-area-inset-top)) 16px 16px; }
+  .sheet.full .banner { margin-top: calc(-18px - env(safe-area-inset-top)); }
+  .banner.yellow { background: var(--yellow); color: var(--on-yellow); }
+  .banner.blue { background: var(--blue); color: var(--on-blue); }
+  .banner .eyebrow { color: inherit; opacity: .8; }
+  .banner h2 { font-size: 36px; }
+  .conv .btn { min-height: 86px; font-size: 32px; }
+  .conv .btn small { font-family: var(--body); font-weight: 600; font-size: 15px; letter-spacing: 0; text-transform: none; opacity: .75; }
+  .final-score { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px; text-align: center; }
+  .final-score .n { font-family: var(--display); font-weight: 600; font-size: 20px; line-height: 1.1; overflow-wrap: anywhere; }
+  .final-score .s { font-family: var(--display); font-weight: 800; font-size: 64px; line-height: 1; font-variant-numeric: tabular-nums; }
+  .final-score .dash { font-family: var(--display); font-size: 40px; color: var(--muted); }
+  .log { display: flex; flex-direction: column; gap: 0; font-size: 15px; }
+  .log div { display: grid; grid-template-columns: 74px 1fr auto; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--line); }
+  .log .t { font-family: var(--display); font-weight: 600; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .log .p { font-family: var(--display); font-weight: 800; }
+  .menu .btn { justify-content: flex-start; font-size: 20px; min-height: 54px; }
+  .adj { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .adj .box { background: var(--surface); border-radius: 14px; padding: 12px; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .adj .box .n { font-family: var(--display); font-weight: 600; font-size: 18px; text-align: center; }
+  .adj .box .s { font-family: var(--display); font-weight: 800; font-size: 56px; line-height: 1; }
+  .adj .box .row .btn { min-height: 52px; }
+  .time-in { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px; }
+  .time-in input { text-align: center; font-family: var(--display); font-size: 40px; font-weight: 800; padding: 6px; }
+  .time-in .colon { font-family: var(--display); font-size: 40px; font-weight: 800; }
+
+  /* ---------- portrait lock ----------
+     iOS won't let a web page lock orientation, so when a phone is sideways the
+     whole page is counter-rotated to stay upright relative to the phone.
+     .rot-ccw = phone turned counter-clockwise (top points left); .rot-cw = the
+     other way. Native touch scrolling is replaced by a small handler below. */
+  html.rot, html.rot body { overflow: hidden; }
+  html.rot body { position: fixed; top: 0; left: 0; width: 100vh; height: 100vw; transform-origin: 0 0; overflow-y: auto; touch-action: none; overscroll-behavior: none; }
+  html.rot-ccw body { transform: rotate(-90deg) translateX(-100%); }
+  html.rot-cw body { transform: rotate(90deg) translateY(-100%); }
+  html.rot .screen { min-height: 100%; }
+  html.rot .modal-root, html.rot .alert, html.rot .toast { position: absolute; }
+  html.rot .sheet { max-height: 92%; }
+  html.rot .clock .digits { font-size: clamp(84px, 30vh, 150px); }
+  html.rot .team .score { font-size: clamp(72px, 24vh, 120px); }
+  .toast { position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom)); transform: translateX(-50%); background: var(--chalk-bg); color: var(--chalk-ink); font-weight: 600; padding: 10px 16px; border-radius: 999px; z-index: 60; opacity: 0; transition: opacity .2s; pointer-events: none; }
+  .toast.show { opacity: 1; }
+</style>
+
+<!-- ================= HOME ================= -->
+<section class="screen" id="home">
+  <div class="brand">
+    <div class="lockup">
+      <svg viewBox="0 0 44 44" aria-hidden="true"><rect x="2" y="2" width="40" height="40" rx="10" fill="var(--surface2)"/><path d="M13 9v27" stroke="var(--ink)" stroke-width="3" stroke-linecap="round"/><path d="M15 10h16l-4 6 4 6H15z" fill="var(--yellow)"/><path d="M15 23h13l-3 5 3 5H15z" fill="var(--blue)"/></svg>
+      <div><h1>Flag Ref</h1><div class="eyebrow">Point Grey Cup · UBC Rec</div></div>
+    </div>
+    <button class="link" data-act="diagnostics" style="padding:4px 0">v16</button>
+  </div>
+  <button class="sync" id="sync" data-state="saving" data-act="diagnostics">Connecting to your account…</button>
+  <div id="resumeWrap"></div>
+  <button class="btn primary huge" data-act="newGame">New game</button>
+  <button class="btn" data-act="rules">Quick rules</button>
+  <div class="eyebrow" style="margin-top:8px">Past games</div>
+  <div class="gamelist" id="gamelist"></div>
+</section>
+
+<!-- ================= SETUP ================= -->
+<section class="screen" id="setup" hidden>
+  <div class="brand">
+    <h2>New game</h2>
+    <span><button class="link" data-act="rules">Quick rules</button><button class="link" data-act="goHome">Cancel</button></span>
+  </div>
+
+  <div class="teamsetup field" id="ts0" data-flag="yellow">
+    <label for="name0">Team 1</label>
+    <input type="text" id="name0" placeholder="Team name" autocomplete="off" autocapitalize="words" enterkeyhint="next">
+    <div class="seg">
+      <button class="yellow" data-act="setFlag" data-team="0" data-flag="yellow" aria-pressed="true">Yellow flags</button>
+      <button class="blue" data-act="setFlag" data-team="0" data-flag="blue" aria-pressed="false">Blue flags</button>
+    </div>
+  </div>
+
+  <div class="teamsetup field" id="ts1" data-flag="blue">
+    <label for="name1">Team 2</label>
+    <input type="text" id="name1" placeholder="Team name" autocomplete="off" autocapitalize="words" enterkeyhint="done">
+    <div class="seg">
+      <button class="yellow" data-act="setFlag" data-team="1" data-flag="yellow" aria-pressed="false">Yellow flags</button>
+      <button class="blue" data-act="setFlag" data-team="1" data-flag="blue" aria-pressed="true">Blue flags</button>
+    </div>
+  </div>
+
+  <div class="field">
+    <label>Who kicks off the 1st half?</label>
+    <div class="seg kick">
+      <button data-act="setKick" data-team="0" aria-pressed="false" id="kick0">Team 1</button>
+      <button data-act="setKick" data-team="1" aria-pressed="false" id="kick1">Team 2</button>
+    </div>
+    <div class="hint">The other team kicks off the 2nd half.</div>
+  </div>
+
+  <div class="field">
+    <label for="halfMin">Half length (minutes)</label>
+    <input type="number" id="halfMin" inputmode="numeric" min="1" max="60" value="20" style="max-width:120px">
+  </div>
+
+  <div class="spacer"></div>
+  <div class="err" id="setupErr"></div>
+  <button class="btn primary huge" data-act="toReady">Continue</button>
+</section>
+
+<!-- ================= READY ================= -->
+<section class="screen" id="ready" hidden>
+  <div class="brand">
+    <h2>Ready</h2>
+    <span><button class="link" data-act="rules">Quick rules</button><button class="link" data-act="goSetup">Edit</button></span>
+  </div>
+  <div class="card">
+    <div class="matchup">
+      <div><div class="t" id="rName0"></div><div style="margin-top:8px"><span class="chip" id="rChip0"></span></div></div>
+      <div class="vs">vs</div>
+      <div><div class="t" id="rName1"></div><div style="margin-top:8px"><span class="chip" id="rChip1"></span></div></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="eyebrow">Kickoffs</div>
+    <div id="rKick"></div>
+    <div class="muted" id="rHalf"></div>
+  </div>
+  <div class="spacer"></div>
+  <div class="hint" style="text-align:center">Tap at the opening kickoff — this starts the clock.</div>
+  <button class="btn primary huge" data-act="startGame">Start game</button>
+</section>
+
+<!-- ================= BOARD ================= -->
+<section class="screen board" id="board" hidden>
+  <div class="topbar">
+    <span class="pill" id="halfPill">1st half</span>
+    <span class="center"><span class="sdot" id="syncDot"></span><span id="kickNote"></span></span>
+    <button class="iconbtn" data-act="menu" aria-label="Menu">⋯</button>
+  </div>
+  <button class="strip" id="syncStrip" data-act="diagnostics" hidden></button>
+
+  <button class="clock" id="clock" data-act="toggleClock" data-state="stopped" data-running="false">
+    <div class="digits num" id="digits">20:00</div>
+    <div class="status"><span class="led"></span><span id="clockStatus">Tap to start</span></div>
+    <div class="pre" id="clockPre"></div>
+    <div class="sub" id="clockSub"></div>
+  </button>
+  <div class="slide stop" id="stopSlide" data-slide="stopClockConfirmed" hidden><div class="slide-label">Slide to stop clock</div><div class="slide-hint">›››</div><div class="slide-knob"></div></div>
+
+  <div class="teams">
+    <div class="team" id="team0" data-flag="yellow">
+      <div class="head" id="bName0"></div>
+      <div class="score num" id="bScore0">0</div>
+      <button class="btn td" data-act="touchdown" data-team="0">TD<small>+6</small></button>
+    </div>
+    <div class="team" id="team1" data-flag="blue">
+      <div class="head" id="bName1"></div>
+      <div class="score num" id="bScore1">0</div>
+      <button class="btn td" data-act="touchdown" data-team="1">TD<small>+6</small></button>
+    </div>
+  </div>
+
+  <div class="lastplay">
+    <div class="txt" id="lastplay">No scoring yet</div>
+    <button class="btn small ghost" data-act="undo" id="undoBtn">Undo</button>
+  </div>
+</section>
+
+<div class="modal-root" id="modal"><div class="scrim" data-act="scrim"></div><div class="sheet" id="sheet"></div></div>
+<div class="alert" id="alert" data-act="hideAlert" hidden><div><div class="eyebrow" id="alertEyebrow"></div><h2 id="alertTitle"></h2><div class="body" id="alertBody"></div><div class="hint" style="margin-top:18px">Tap to dismiss</div></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function () {
+  'use strict';
+  const KEY = 'flagref.v1';
+  const $ = (id) => document.getElementById(id);
+  const DEFAULT = { current: null, games: [], settings: { halfMin: 20 }, updatedAt: 0, unsyncedGames: [], unsyncedDeletes: [] };
+  let S = load();
+  let modalLock = false;          // true when the sheet must be answered (conversion)
+  let wakeLock = null;
+
+  function load() {
+    try { const r = localStorage.getItem(KEY); if (r) { const o = JSON.parse(r); return { ...DEFAULT, ...o, settings: { ...DEFAULT.settings, ...(o.settings || {}) } }; } } catch (e) {}
+    return JSON.parse(JSON.stringify(DEFAULT));
+  }
+  function localSave() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+  function save() { S.updatedAt = Date.now(); localSave(); queueSync(); }
+
+  /* ---------- cloud sync (artifact db) ----------
+     Inside the Claude viewer this page runs in a cross-site iframe, and iOS
+     wipes that iframe's local storage on every relaunch — so on the phone
+     the cloud copy is the only copy that survives. Every change is pushed
+     right away, failures are shown on the board, and a finished game is
+     only cleared once the cloud has confirmed it. Clock state is
+     timestamps, so a running clock never generates writes by itself. */
+  const VERSION = 16;
+  // Inside the Claude viewer the page has window.claude and can use the account store;
+  // as a standalone home-screen app (GitHub Pages) phone storage is first-party and durable.
+  const IN_VIEWER = !!(window.claude && typeof window.claude.use === 'function');
+  let DB = null, dbState = 'pending';   // pending | ready | none
+  let cloudSettled; const cloudReady = new Promise((r) => { cloudSettled = r; setTimeout(r, 4000); });
+  let syncTimer = null, dirty = false, flushing = false, syncState = 'saving';
+  let lastCloudWrite = 0, lastSyncError = null, failStreak = 0;
+  const diag = { boot: Date.now(), errors: [], storagePersisted: null };
+  try { diag.storagePersisted = !!localStorage.getItem('flagref.boot'); localStorage.setItem('flagref.boot', String(Date.now())); } catch (e) { diag.storagePersisted = false; }
+  const SYNC_MSG = { local: IN_VIEWER ? 'Cloud save unavailable in this view' : 'Saved on this phone', saving: 'Saving to your account…', synced: 'Saved to your account', error: 'NOT saving to your account — retrying' };
+  function setSync(state) {
+    syncState = state;
+    const el = $('sync'); if (el) { el.dataset.state = (state === 'local' && !IN_VIEWER) ? 'synced' : state; el.textContent = SYNC_MSG[state]; }
+    const dot = $('syncDot'); if (dot) dot.dataset.state = (state === 'local' && !IN_VIEWER) ? 'synced' : state;
+    const strip = $('syncStrip');
+    if (strip) {
+      strip.hidden = !(state === 'error' || (state === 'local' && IN_VIEWER)); strip.dataset.state = state;
+      strip.textContent = state === 'error' ? 'Not saving to your account — keep the app open, retrying. Tap for details.' : 'Cloud save unavailable here — this game is lost if the app closes. Tap for details.';
+    }
+  }
+  function noteError(where, e) {
+    const rec = { t: Date.now(), where, code: (e && e.code) || '', message: String((e && e.message) || e).slice(0, 200) };
+    lastSyncError = rec; diag.errors.push(rec); if (diag.errors.length > 30) diag.errors.shift();
+  }
+  function queueSync(delay = 0) { dirty = true; if (!DB) return; clearTimeout(syncTimer); syncTimer = setTimeout(flush, delay); }
+  async function writeCurrent() {
+    const at = S.updatedAt;
+    await DB.doc('flagref/current').set({ game: S.current || null, settings: S.settings, updatedAt: at, diag: { version: VERSION, boot: diag.boot, storagePersisted: diag.storagePersisted, errors: diag.errors.slice(-10) } });
+    if (S.updatedAt === at) dirty = false;   // a tap during the write keeps it dirty
+    lastCloudWrite = Date.now(); failStreak = 0;
+  }
+  async function flush() {
+    if (!DB || flushing) return;
+    if (!dirty && !S.unsyncedGames.length && !S.unsyncedDeletes.length) { setSync('synced'); return; }
+    flushing = true; setSync('saving');
+    let ok = true;
+    try {
+      for (const id of [...S.unsyncedGames]) {
+        const game = S.games.find((x) => x.id === id);
+        if (game) await DB.doc('games/' + id).set(game);
+        S.unsyncedGames = S.unsyncedGames.filter((x) => x !== id); localSave();
+      }
+      for (const id of [...S.unsyncedDeletes]) {
+        await DB.doc('games/' + id).delete();
+        S.unsyncedDeletes = S.unsyncedDeletes.filter((x) => x !== id); localSave();
+      }
+      if (dirty) await writeCurrent();
+    } catch (e) { ok = false; failStreak++; noteError('flush', e); }
+    flushing = false;
+    clearTimeout(syncTimer);
+    if (!ok) { setSync('error'); syncTimer = setTimeout(flush, Math.min(15000, 2000 * failStreak)); }
+    else if (dirty || S.unsyncedGames.length || S.unsyncedDeletes.length) syncTimer = setTimeout(flush, 200);
+    else setSync('synced');
+  }
+  async function initCloud() {
+    try { DB = window.claude && window.claude.use ? await window.claude.use('db') : null; } catch (e) { DB = null; noteError('use', e); }
+    dbState = DB ? 'ready' : 'none';
+    if (!DB) { setSync('local'); cloudSettled(); return; }
+    setSync('saving');
+    try {
+      const snap = await DB.doc('flagref/current').get();
+      let changedCurrent = false;
+      if (snap.exists) {
+        const d = snap.data() || {};
+        if ((d.updatedAt || 0) > (S.updatedAt || 0)) {
+          S.current = d.game || null; S.settings = { ...S.settings, ...(d.settings || {}) }; S.updatedAt = d.updatedAt;
+          changedCurrent = true; localSave();
+        }
+      }
+      const q = await DB.collection('games').limit(1000).get();
+      const byId = new Map(S.games.map((x) => [x.id, x]));
+      let addedGames = 0;
+      q.docs.forEach((ds) => { const x = ds.data(); if (x && x.id && !byId.has(x.id) && !S.unsyncedDeletes.includes(x.id) && !(S.current && S.current.id === x.id)) { byId.set(x.id, x); addedGames++; } });
+      if (addedGames) { S.games = [...byId.values()].sort((a, b) => (b.endedAt || b.createdAt) - (a.endedAt || a.createdAt)); localSave(); }
+      if (changedCurrent) { closeModal(); boot(); toast('Restored game from your account'); }
+      else if (addedGames && current === 'home') renderHome();
+      flush();
+    } catch (e) { noteError('init', e); setSync('error'); clearTimeout(syncTimer); syncTimer = setTimeout(flush, 3000); }
+    cloudSettled();
+  }
+  document.addEventListener('visibilitychange', () => {
+    clearTimeout(syncTimer);
+    if (document.visibilityState === 'hidden') flush();
+    else if (DB && (dirty || syncState === 'error')) flush();
+  });
+  window.addEventListener('pagehide', () => { clearTimeout(syncTimer); flush(); });
+  window.addEventListener('error', (e) => noteError('js', e.error || e.message));
+  window.addEventListener('unhandledrejection', (e) => noteError('promise', e.reason));
+
+  /* ---------- game model ---------- */
+  function newGame() {
+    const hm = S.settings.halfMin || 20;
+    return {
+      id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), createdAt: Date.now(), startedAt: null, endedAt: null,
+      teams: [{ name: '', flag: 'yellow', score: 0 }, { name: '', flag: 'blue', score: 0 }],
+      kickoff: null, halfMin: hm, half: 1, status: 'setup',   // setup | ready | live | halftime | over
+      clock: { remaining: hm * 60000, since: null }, log: [], pending: null, warned: false,
+      // fairPlay[i] = the 1–5 fair-play score team i RECEIVED from the other team (IM requirement), plus a comment
+      fairPlay: [{ score: null, note: '' }, { score: null, note: '' }]
+    };
+  }
+  const g = () => S.current;
+  const fairPlayOf = (game) => { if (!game.fairPlay) game.fairPlay = [{ score: null, note: '' }, { score: null, note: '' }]; return game.fairPlay; };
+  const fairPlayComplete = (game) => fairPlayOf(game).every((x) => x.score >= 1);
+  const other = (i) => 1 - i;
+  const remainingMs = (game) => game.clock.since ? Math.max(0, game.clock.remaining - (Date.now() - game.clock.since)) : game.clock.remaining;
+  const running = (game) => !!game.clock.since;
+  function startClock(game) { if (!running(game) && remainingMs(game) > 0) { game.clock.since = Date.now(); } }
+  function stopClock(game) { if (running(game)) { game.clock.remaining = remainingMs(game); game.clock.since = null; } }
+  function fmt(ms) { const s = Math.ceil(ms / 1000); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); }
+  function stampOf(game) { return (game.half === 1 ? '1H ' : '2H ') + fmt(remainingMs(game)); }
+  function isStopTime(game) { return game.half === 2 && remainingMs(game) <= 60000 && Math.abs(game.teams[0].score - game.teams[1].score) <= 14; }
+  function shortDate(ts) { return new Date(ts).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' }); }
+  function shortTime(ts) { return new Date(ts).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' }); }
+  function esc(s) { return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+
+  /* League weeks. UBC Rec's fall 2026 calendar: first week of play Sep 26,
+     so the first Tue–Thu flag football block is Sep 29 – Oct 1; playoffs
+     Nov 23 – Dec 6. Add a season here when the winter term dates are out. */
+  const SEASONS = [
+    { name: 'Fall 2026', firstTuesday: [2026, 8, 29], playoffsFrom: [2026, 10, 23], lastDay: [2026, 11, 6] }
+  ];
+  function weekOf(ts) {
+    const d = new Date(ts); const dow = d.getDay();            // 0 Sun … 6 Sat
+    if (dow < 2 || dow > 4) return null;                        // only Tue/Wed/Thu are game days
+    const tue = new Date(d.getFullYear(), d.getMonth(), d.getDate() - (dow - 2));
+    const thu = new Date(tue.getFullYear(), tue.getMonth(), tue.getDate() + 2);
+    for (const sn of SEASONS) {
+      const first = new Date(...sn.firstTuesday), po = new Date(...sn.playoffsFrom), last = new Date(...sn.lastDay);
+      if (tue < first || tue > last) continue;
+      const n = Math.round((tue - first) / 6048e5) + 1;
+      const fmtD = (x) => x.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+      const dates = fmtD(tue) + ' – ' + fmtD(thu);
+      if (tue >= po) { const pn = Math.round((tue - po) / 6048e5) + 1; return { key: sn.name + ':P' + pn, label: 'Playoffs · Week ' + pn, dates, sort: tue.getTime() }; }
+      return { key: sn.name + ':' + n, label: 'Week ' + n, dates, sort: tue.getTime() };
+    }
+    return null;
+  }
+
+  function addLog(game, entry) { game.log.push({ t: Date.now(), stamp: stampOf(game), ...entry }); }
+  const LABEL = { td: 'Touchdown', conv2: '2-pt conversion', conv1: '1-pt conversion', conv0: 'Conversion no good', adjust: 'Score adjusted' };
+  function logLine(game, e) {
+    const n = game.teams[e.team].name;
+    const pts = e.pts > 0 ? '+' + e.pts : e.pts < 0 ? String(e.pts) : '—';
+    return { stamp: e.stamp, text: n + ' · ' + LABEL[e.type], pts };
+  }
+
+  /* ---------- screens ---------- */
+  const screens = ['home', 'setup', 'ready', 'board'];
+  let current = 'home';
+  function show(id) {
+    current = id;
+    screens.forEach((s) => { $(s).hidden = s !== id; });
+    window.scrollTo(0, 0); document.body.scrollTop = 0;
+    if (id === 'board') requestWake(); else releaseWake();
+  }
+
+  function renderHome() {
+    const cur = g();
+    const wrap = $('resumeWrap');
+    if (cur && cur.status !== 'setup') {
+      const t = cur.teams;
+      wrap.innerHTML = `<div class="card resume">
+        <div class="eyebrow" style="color:var(--good)">Game in progress</div>
+        <div class="game" style="padding:0;background:none">
+          <div class="teams"><span class="dot ${t[0].flag}"></span>${esc(t[0].name)} <span class="muted">vs</span> <span class="dot ${t[1].flag}"></span>${esc(t[1].name)}</div>
+          <div class="score num">${t[0].score}–${t[1].score}</div>
+        </div>
+        <button class="btn primary" data-act="resume">Resume</button>
+      </div>`;
+    } else wrap.innerHTML = '';
+
+    const list = $('gamelist');
+    if (!S.games.length) { list.innerHTML = '<div class="empty">Finished games are saved here.</div>'; return; }
+    // group by league week (Tue–Thu blocks from the season's first Tuesday); everything else is "Test / other"
+    const groups = new Map();
+    S.games.forEach((game, i) => {
+      const w = weekOf(game.startedAt || game.createdAt);
+      const key = w ? w.key : 'other';
+      if (!groups.has(key)) groups.set(key, { w, items: [] });
+      groups.get(key).items.push(i);
+    });
+    const order = [...groups.values()].sort((a, b) => (b.w ? b.w.sort : -1) - (a.w ? a.w.sort : -1));
+    list.innerHTML = order.map(({ w, items }) => `
+      <div class="wk"><span class="eyebrow">${w ? esc(w.label) : 'Test / other'}</span><span class="dates">${w ? esc(w.dates) : 'outside Tue–Thu game days'}</span></div>
+      ${items.map((i) => { const game = S.games[i]; const t = game.teams; return `<button class="game" data-act="viewGame" data-id="${esc(game.id)}">
+        <div class="teams"><span class="dot ${t[0].flag}"></span>${esc(t[0].name)} <span class="muted">vs</span> <span class="dot ${t[1].flag}"></span>${esc(t[1].name)}</div>
+        <div class="score num">${t[0].score}–${t[1].score}</div>
+        <div class="when">${shortDate(game.endedAt || game.createdAt)} · ${shortTime(game.startedAt || game.createdAt)}</div>
+      </button>`; }).join('')}`).join('');
+  }
+
+  function renderSetup() {
+    const game = g();
+    ['0', '1'].forEach((i) => {
+      $('name' + i).value = game.teams[i].name;
+      $('ts' + i).dataset.flag = game.teams[i].flag;
+      $('ts' + i).querySelectorAll('[data-act="setFlag"]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.flag === game.teams[i].flag)));
+      $('kick' + i).textContent = game.teams[i].name || ('Team ' + (Number(i) + 1));
+      $('kick' + i).setAttribute('aria-pressed', String(game.kickoff === Number(i)));
+    });
+    $('halfMin').value = game.halfMin;
+    $('setupErr').textContent = '';
+  }
+
+  function renderReady() {
+    const game = g(); const t = game.teams;
+    $('rName0').textContent = t[0].name; $('rName1').textContent = t[1].name;
+    [0, 1].forEach((i) => { const c = $('rChip' + i); c.className = 'chip ' + t[i].flag; c.textContent = t[i].flag + ' flags'; });
+    const k = game.kickoff;
+    $('rKick').innerHTML = `<div><b>1st half:</b> ${esc(t[k].name)} kicks off, ${esc(t[other(k)].name)} receives</div>
+      <div><b>2nd half:</b> ${esc(t[other(k)].name)} kicks off, ${esc(t[k].name)} receives</div>`;
+    $('rHalf').textContent = game.halfMin + '-minute halves · running clock · stop time in the last minute of the 2nd half when within 14';
+  }
+
+  function renderBoard() {
+    const game = g(); if (!game) return;
+    const t = game.teams;
+    $('halfPill').textContent = game.status === 'halftime' ? 'Halftime' : game.status === 'over' ? 'Final' : (game.half === 1 ? '1st half' : '2nd half');
+    const k = game.kickoff;
+    $('kickNote').textContent = game.half === 1 ? '2nd half kickoff: ' + t[other(k)].name : (game.status === 'over' ? '' : t[other(k)].name + ' kicked off');
+    [0, 1].forEach((i) => {
+      $('team' + i).dataset.flag = t[i].flag;
+      $('bName' + i).textContent = t[i].name;
+      $('bScore' + i).textContent = t[i].score;
+    });
+    const last = game.log[game.log.length - 1];
+    $('lastplay').innerHTML = last ? `<b>${esc(t[last.team].name)}</b> · ${LABEL[last.type]} <span class="num">${last.pts > 0 ? '+' + last.pts : last.pts < 0 ? last.pts : ''}</span> <span class="muted num">${last.stamp}</span>` : 'No scoring yet';
+    $('undoBtn').disabled = !last;
+    renderClock();
+  }
+
+  function renderClock() {
+    const game = g(); if (!game) return;
+    const ms = remainingMs(game);
+    $('digits').textContent = fmt(ms);
+    const c = $('clock');
+    const run = running(game);
+    c.dataset.running = String(run);
+    let state = run ? 'running' : 'stopped';
+    let status, sub = '', pre = '', preKind = '';
+    const within14 = Math.abs(game.teams[0].score - game.teams[1].score) <= 14;
+    if (game.status === 'halftime') { status = 'Halftime'; sub = game.teams[other(game.kickoff)].name + ' kicks off · tap for the 2nd-half slide'; }
+    else if (game.status === 'over') { status = 'Final'; sub = 'Open the menu to finish and save'; }
+    else if (isStopTime(game)) { state = 'stoptime'; status = run ? 'Stop time · running' : 'Stop time · stopped'; sub = 'Within 14 — stop on incompletions, out of bounds, first downs, scores.'; }
+    else if (ms <= 60000 && game.half === 2) { status = run ? 'Running' : 'Stopped'; pre = 'Clock runs — up by more than 14'; preKind = 'run'; }
+    else {
+      status = run ? 'Running' : (ms === game.halfMin * 60000 ? 'Tap to start' : 'Stopped');
+      if (game.half === 2 && ms <= 180000) { pre = within14 ? 'Stop time at 1:00 — within 14' : 'Clock runs at 1:00 — up by more than 14'; preKind = within14 ? 'stop' : 'run'; }
+    }
+    c.dataset.state = state;
+    $('clockStatus').textContent = status;
+    $('clockSub').textContent = sub;
+    const p = $('clockPre'); p.textContent = pre; p.dataset.kind = preKind;
+    // Outside stop time a running clock is stopped by sliding, never by a tap.
+    const needSlide = game.status === 'live' && run && state !== 'stoptime';
+    if ($('stopSlide').hidden !== !needSlide) { $('stopSlide').hidden = !needSlide; resetSlide($('stopSlide')); if (needSlide) fitSlideLabels(); }
+    if (needSlide && !sub) $('clockSub').textContent = 'Slide below to stop';
+  }
+
+  /* ---------- modal ---------- */
+  function openModal(html, opts = {}) {
+    modalLock = !!opts.lock;
+    const sheet = $('sheet');
+    sheet.className = 'sheet' + (opts.full ? ' full' : '');
+    sheet.innerHTML = html; sheet.scrollTop = 0; document.body.scrollTop = 0;
+    $('modal').classList.add('open');
+    if (sheet.querySelector('.slide')) fitSlideLabels();
+  }
+  function closeModal() { modalLock = false; $('modal').classList.remove('open'); $('sheet').innerHTML = ''; }
+
+  function conversionModal() {
+    const game = g(); const p = game.pending; if (!p) return;
+    const t = game.teams[p.team];
+    openModal(`<div class="banner ${t.flag}"><div class="eyebrow">Touchdown · +6</div><h2>${esc(t.name)}</h2></div>
+      <div class="eyebrow">Conversion result?</div>
+      <div class="stack conv">
+        <div class="slide primary" data-slide="conv" data-pts="2"><div class="slide-label">2 points <small>from the 10</small></div><div class="slide-hint">›››</div><div class="slide-knob"></div></div>
+        <div class="slide primary" data-slide="conv" data-pts="1"><div class="slide-label">1 point <small>from the 5</small></div><div class="slide-hint">›››</div><div class="slide-knob"></div></div>
+        <div class="slide ghost" data-slide="conv" data-pts="0"><div class="slide-label">No good</div><div class="slide-hint">›››</div><div class="slide-knob"></div></div>
+      </div>
+      <div class="hint" style="text-align:center">Slide to confirm — protects against pocket touches.</div>
+      <button class="link" data-act="undoTD">Oops — that wasn't a touchdown</button>`, { lock: true, full: true });
+  }
+
+  function halftimeModal() {
+    bannerPending = false;
+    const game = g(); const t = game.teams; const k = game.kickoff;
+    openModal(`<div class="eyebrow">Halftime</div>
+      ${scoreBlock(game)}
+      <div class="card"><div class="eyebrow">2nd half kickoff</div>
+        <div style="font-size:20px"><b>${esc(t[other(k)].name)}</b> kicks off · <b>${esc(t[k].name)}</b> receives</div></div>
+      ${awayNote(game)}
+      <div class="hint" style="text-align:center">Slide at the kickoff — this starts the 2nd-half clock.</div>
+      ${slideHtml('startHalf2', 'Slide to start 2nd half')}
+      <div class="row"><button class="link" data-act="close">Not yet</button><button class="link" data-act="adjustClockRevive">Set the clock instead</button></div>`);
+  }
+
+  function fairPlayHtml(game) {
+    const t = game.teams; const fp = fairPlayOf(game);
+    return [0, 1].map((to) => `<div class="fp">
+      <div class="fp-title">${esc(t[other(to)].name)} rates <b>${esc(t[to].name)}</b></div>
+      <div class="fp-scale">${[1, 2, 3, 4, 5].map((n) => `<button type="button" data-act="fpScore" data-to="${to}" data-score="${n}" aria-pressed="${fp[to].score === n}">${n}</button>`).join('')}</div>
+      <div class="fp-legend"><span>1 · poor</span><span>5 · excellent</span></div>
+      <input type="text" id="fpNote${to}" data-to="${to}" placeholder="Comment (optional)" value="${esc(fp[to].note || '')}" maxlength="200" autocomplete="off">
+    </div>`).join('');
+  }
+  function finalModal() {
+    bannerPending = false;
+    const game = g();
+    const complete = fairPlayComplete(game);
+    openModal(`<div class="eyebrow">Final</div>
+      ${scoreBlock(game)}
+      ${awayNote(game)}
+      <div class="eyebrow">Fair play · each team rates the other</div>
+      ${fairPlayHtml(game)}
+      <div class="err" id="finishErr"></div>
+      <div class="stack" id="finishWrap">
+        ${complete ? slideHtml('finish', 'Slide to save &amp; finish') : '<div class="hint" style="text-align:center">Enter both fair play scores to finish. <button class="link" data-act="finishWithoutFP" style="display:inline;padding:0">Finish without them</button></div>'}
+        <button class="btn" data-act="share">Share score</button>
+      </div>
+      <div class="row"><button class="link" data-act="close">Not yet — still playing</button><button class="link" data-act="adjustClockRevive">Set the clock instead</button></div>`);
+  }
+  function awayNote(game) {
+    return game.expiredAway ? '<div class="hint" style="text-align:center;color:var(--warn)">The clock ran out while the app was in the background. If it should have been stopped, set the clock instead.</div>' : '';
+  }
+
+  function scoreBlock(game) {
+    const t = game.teams;
+    return `<div class="final-score">
+      <div><div class="n">${esc(t[0].name)}</div><div class="s num">${t[0].score}</div></div><div class="dash">–</div>
+      <div><div class="n">${esc(t[1].name)}</div><div class="s num">${t[1].score}</div></div></div>`;
+  }
+
+  function menuModal() {
+    const game = g();
+    openModal(`<div class="eyebrow">Game menu</div>
+      <div class="stack menu">
+        <button class="btn" data-act="adjustScore">Adjust score</button>
+        <button class="btn" data-act="adjustClock">Set clock</button>
+        <button class="btn" data-act="showLog">Scoring log</button>
+        <button class="btn" data-act="rules">Quick rules</button>
+        ${game.status === 'live' ? `<button class="btn" data-act="endHalf">${game.half === 1 ? 'End 1st half now' : 'End game now'}</button>` : ''}
+        ${game.status === 'halftime' ? '<button class="btn" data-act="halftimeModal">Start 2nd half</button>' : ''}
+        ${game.status === 'over' ? '<button class="btn primary" data-act="finalModal">Finish &amp; save</button>' : ''}
+        <button class="btn" data-act="share">Share score</button>
+        <button class="btn" data-act="diagnostics">Diagnostics &amp; backup</button>
+        <button class="btn ghost" data-act="goHome">Back to home (keeps game)</button>
+        <button class="btn ghost" style="color:var(--danger);border-color:var(--danger)" data-act="abandon">Abandon game</button>
+      </div>
+      <button class="link" data-act="close">Close</button>`);
+  }
+
+  let adjStaged = [0, 0];
+  function adjustModal() {
+    const game = g(); const t = game.teams; adjStaged = [t[0].score, t[1].score];
+    openModal(`<div class="eyebrow">Adjust score</div>
+      <div class="adj">${[0, 1].map((i) => `<div class="box"><div class="n">${esc(t[i].name)}</div><div class="s num" id="adj${i}">${t[i].score}</div>
+        <div class="row"><button class="btn" data-act="adj" data-team="${i}" data-d="-1">−1</button><button class="btn" data-act="adj" data-team="${i}" data-d="1">+1</button></div></div>`).join('')}</div>
+      <div class="hint" id="adjHint">Nothing changed yet. Tap ±1, then slide to apply.</div>
+      ${slideHtml('adjustApply', 'Slide to apply')}
+      <button class="link" data-act="close">Cancel</button>`);
+  }
+
+  let reviveOnSet = false;
+  function clockModal(revive) {
+    const game = g(); const ms = remainingMs(game); const s = Math.ceil(ms / 1000);
+    reviveOnSet = !!revive || game.status === 'over';
+    const note = game.status === 'halftime' ? (reviveOnSet ? 'This puts the 1st half back on the clock.' : 'This sets the 2nd-half clock. The clock stays stopped after you set it.') : 'The clock stays stopped after you set it.';
+    openModal(`<div class="eyebrow">Set clock</div>
+      <div class="time-in"><input type="number" id="setMin" inputmode="numeric" min="0" max="60" value="${Math.floor(s / 60)}"><span class="colon">:</span><input type="number" id="setSec" inputmode="numeric" min="0" max="59" value="${s % 60}"></div>
+      <div class="hint">${note}</div>
+      ${slideHtml('applyClock', 'Slide to set clock')}
+      <button class="link" data-act="close">Cancel</button>`);
+  }
+
+  function logModal(game, opts = {}) {
+    const rows = game.log.length ? game.log.map((e) => { const l = logLine(game, e); return `<div><span class="t">${l.stamp}</span><span>${esc(l.text)}</span><span class="p num">${l.pts}</span></div>`; }).join('') : '<div class="empty">No scoring yet</div>';
+    const fp = game.fairPlay; const t = game.teams;
+    const fpBlock = fp && (fp[0].score || fp[1].score) ? `<div class="eyebrow">Fair play</div><div class="card fp-summary">${[0, 1].map((i) => `<div><b>${fp[i].score || '—'}</b> · ${esc(t[i].name)}${fp[i].note ? ' — ' + esc(fp[i].note) : ''} <span class="muted">(by ${esc(t[other(i)].name)})</span></div>`).join('')}</div>` : '';
+    openModal(`<div class="eyebrow">${opts.title || 'Scoring log'}</div>
+      ${scoreBlock(game)}
+      ${fpBlock}
+      <div class="log">${rows}</div>
+      ${opts.footer || '<button class="btn primary" data-act="close">Close</button>'}`);
+  }
+
+  function viewGameModal(id) {
+    const game = S.games.find((x) => x.id === id); if (!game) { renderHome(); return; }
+    logModal(game, {
+      title: shortDate(game.endedAt || game.createdAt) + ' · ' + shortTime(game.endedAt || game.createdAt),
+      footer: `<div class="stack"><button class="btn primary" data-act="shareSaved" data-id="${esc(id)}">Share score</button>
+        <button class="btn ghost" data-act="deleteSaved" data-id="${esc(id)}" style="color:var(--danger);border-color:var(--danger)">Delete</button>
+        <button class="link" data-act="close">Close</button></div>`
+    });
+  }
+
+  function rulesModal() {
+    openModal(`<div class="eyebrow">Quick rules · Point Grey Cup</div>
+      <div class="hint">Condensed from the 2025 rulebook (rev. Jan 5, 2026) for in-game reference. For fine detail, <a href="https://recreation.ubc.ca/wp-content/uploads/2026/01/2025-Point-Grey-Flag-Football-League-Rules-Regulations.pdf" target="_blank" rel="noopener">open the official PDF</a>. Yellow notes are how we call it, not rulebook text.</div>
+      <div class="rules">${RULES}</div>
+      <button class="btn primary" data-act="close">Close</button>`, { full: true });
+  }
+  const RULES = `
+<details><summary>New teams: flag vs. tackle</summary><div class="body">
+<p style="margin:0 0 6px">The 60-second version to give teams in week 1. Everything else works like the football they know.</p><ul>
+<li><b>A pulled flag is the tackle.</b> Defender holds the flag up at the spot. Only the ball carrier can be deflagged. If a flag falls off on its own, it's a one-hand touch instead.</li>
+<li><b>No flag guarding</b> — no arm, hand or ball over the belt, no dropping a shoulder. <b>No spinning, hurdling or leaping</b> to avoid a defender, no lowering the head. All of these: 5 yards and loss of down.</li>
+<li><b>No contact.</b> No blocking, no holding, no stripping the ball. Rushers get a clear straight lane to the QB.</li>
+<li><b>Fumbles are dead where they hit the ground</b> — nobody dives on anything. The offense keeps it. Exception: a <b>muffed kickoff or punt can be picked up and returned</b> unless the ref kills it for collision risk. A lateral caught in the air by the defense is live.</li>
+<li><b>3 downs to make 10 yards.</b> 20-second play clock from the whistle. No direct snap — QB is 3+ yards back.</li>
+<li><b>Rushing the QB:</b> Open — from the 10-yard rush line only. Women's/Mixed — after 5 steamboats. A hand-off ends the count.</li>
+<li><b>Inside the 5, the ball has to be thrown</b> — no hand-offs, no QB runs.</li>
+<li><b>Catch = control with one foot in bounds.</b> <b>Down = anything but a foot touches the ground</b>, including a hand.</li>
+<li><b>Scoring:</b> TD 6 · convert 1 from the 5 (pass) or 2 from the 10 (run or pass) · safety 2. A convert picked off and returned is 2 the other way.</li>
+<li><b>Kickoff out of bounds → receivers' ball at their 15.</b> Kickoffs from the kicker's 15; you can punt on any down.</li>
+<li><b>Clock:</b> two 20-minute halves, running, plus stop time in the last minute of the game if it's within 14. One 30-second time-out per half; it stops the clock.</li>
+<li>Mixed: max 3 self-identifying males on the field. Need 5 to start, 6 max, can finish with 4.</li>
+</ul></div></details>
+
+<details><summary>Players</summary><div class="body"><ul>
+<li><b>6-a-side.</b> Max 6 on the field.</li>
+<li><b>5 to start.</b> Fewer than 5 eligible at kickoff = default/forfeit policy (Universal Rules C1/C3).</li>
+<li><b>Can continue with 4.</b> Down to 3 only through injury or ejection. Can't keep the minimum → 3–0 loss.</li>
+<li><b>Mixed:</b> no more than <b>3 self-identifying males</b> on the field at any time.</li>
+<li>Offense picks the ball (junior size or bigger, approved by officials). No metal studs; no clothing that blocks access to the flag; shirts tucked under the belt.</li>
+</ul></div></details>
+
+<details><summary>Timing &amp; stop time</summary><div class="body"><ul>
+<li><b>Two 20-minute halves,</b> running clock.</li>
+<li><b>Stop time: last minute of the 2nd half only, and only if the differential is 14 or less</b> (and time permits). Then the clock stops on: touchdown · ball out of bounds · time-outs (team or official) · penalties · incomplete pass · injury · until the ref has placed the markers.</li>
+<li>In stop time, an <b>offensive penalty runs 10 seconds off</b>; an offensive penalty in the <b>last 10 seconds ends the game</b>.</li>
+<li>A half doesn't end until the ball is dead and penalties are resolved. <b>TD on the last play → the convert is still played.</b></li>
+<li><b>Time-outs:</b> one 30-second time-out per team per half; they don't carry over.</li>
+<li>Officials may shorten or abandon games for scheduling or safety.</li>
+<div class="house"><em>How we call it</em> <b>A time-out always stops the clock</b>, running time or not — that's the only reason anyone calls one.</div>
+<div class="house"><em>How we call it</em> We don't add time back for substitutions, injuries or time-wasting (rulebook 4c allows it "when possible"; in practice, never).</div>
+</ul></div></details>
+
+<details><summary>Kickoffs &amp; punts</summary><div class="body"><ul>
+<li>Kick off (place kick or punt) from the kicking team's <b>15-yard line</b>; kicking team stays behind the ball until it's kicked. Receivers anywhere behind half.</li>
+<li>Kicking team can't touch it until it has crossed half (unless a receiver touches it first).</li>
+<li><b>Kickoff out of bounds (common): receivers' ball at their 15.</b> No re-kick, no yardage. (The book also allows the spot it went out; we use the 15.) <b>Through the end zone untouched:</b> no score, receivers' ball at their 10.</li>
+<li>Simultaneous recovery/touch → returning team's ball at that spot.</li>
+<li>No kicking the ball forward to advance it: 5 yards from the spot.</li>
+<li><b>Punts:</b> allowed on any down; the ball changes hands. Receiver gets a <b>5-yard halo</b> until the ball touches the ground. Punt that lands in bounds then goes out: spotted at centre in line with where it went out. If nobody plays a loose kick, the ref can kill it and give it to the receivers.</li>
+<li>After a <b>safety</b>, the team scored on kicks off from its own 15.</li>
+<div class="house"><em>How we call it</em> <b>A muffed kick can be picked up and returned</b> (rulebook 7f/8e). Blow it dead the moment there's any risk of a collision around the loose ball; otherwise let them play on.</div>
+</ul></div></details>
+
+<details><summary>Scrimmage &amp; possession</summary><div class="body"><ul>
+<li><b>3 downs to make 10 yards.</b></li>
+<li><b>20-second play clock</b> from the ref's whistle blowing the ball in → delay of game (5 yd).</li>
+<li><b>No direct snap.</b> The player taking the snap must be at least <b>3 yards</b> behind the snapper.</li>
+<li><b>Fumbles and backward passes are dead when they hit the ground</b> — spot of the touch, last team in possession keeps it (unless it was 3rd down and short). A dropped lateral is a fumble. Exception: kickoffs and punts (see above).</li>
+<div class="house"><em>How we call it</em> <b>A lateral caught by the defense in the air is a legal turnover</b> — technically a fumble recovery, but the ball never touched the ground, so it's live. Let them run it back; don't blow it dead.</div>
+<li>Unlimited hand-offs and laterals behind the line. <b>A hand-off behind the line ends the steamboat count</b> — the defense may rush immediately.</li>
+<li><b>Illegal forward pass</b> (play dead, 5 yd + loss of down from the spot): passer's entire body past the line · after a change of possession · second forward pass in a down · passer catches own untouched pass · any forward pass on a return play · thrown away behind the line to avoid loss (intentional grounding).</li>
+<li><b>Catch = control with one foot in bounds.</b> No two-feet or survive-the-ground test (not NFL rules). Receiver carried out mid-air by contact = complete, spotted where the ball was.</li>
+<li><b>Down:</b> any part of the body other than the feet touches the ground — <b>a hand counts</b> (not NFL rules).</li>
+<li><b>Inside the 5:</b> no hand-offs, no QB scrambles → "rush penalty", 5 yards.</li>
+</ul></div></details>
+
+<details><summary>Ball carrier &amp; flags</summary><div class="body"><ul>
+<li><b>Flag guarding</b> is strictly prohibited: swinging a hand/arm over the belt, holding the ball over the flag, or dropping a shoulder to cover the flag.</li>
+<li>No <b>hurdling, leaping or spinning</b> away from a defender; no lowering the head or shoulder to get past.</li>
+<li><b>Any ball-carrier infraction: 5 yards and loss of down.</b></li>
+<li><b>Deflagging:</b> only a player in possession can be deflagged. The defender should stop and hold the flag up at the spot, and must try to hang on to it.</li>
+<li><b>Flag falls off by accident:</b> play continues; that carrier is down by a <b>one-hand touch</b> between shoulders and knees.</li>
+<li><b>No stripping the ball</b> from the carrier's hands: dead ball, 5 yards on the defense.</li>
+<li>Illegally secured flag belt: 10 yards.</li>
+</ul></div></details>
+
+<details><summary>Rushing the passer</summary><div class="body"><ul>
+<li><b>Open divisions:</b> only players who start the play behind the <b>rush line, 10 yards off the line of scrimmage</b>, may rush the snap-taker. Once the snap-taker crosses the line, laterals or hands off, anyone can play the ball.</li>
+<li><b>Women's and Mixed divisions:</b> rushers go after <b>5 steamboats</b>.</li>
+<li>Rushers must be given a <b>clear straight path</b> to the QB; an offensive player who obstructs the rusher is blocking (10 yd).</li>
+<li>Illegal rushing: 5 yards.</li>
+</ul></div></details>
+
+<details><summary>Scoring &amp; converts</summary><div class="body"><ul>
+<li><b>Touchdown 6</b> — ball in possession in the goal area or crossing/touching the goal-line plane; a catch must be held.</li>
+<li><b>Convert:</b> <b>1 point passing from the 5</b> · <b>2 points running or passing from the 10</b>. Live until a score or the play ends.</li>
+<li>Defense intercepts the convert and takes it the other way → <b>2 points</b>. Ends in their own goal area → no score.</li>
+<li><b>Safety 2</b> — ball dead in a team's own goal area (or over the dead-line/side-line-in-goal) after that team carried, kicked, fumbled or directed it there, or a blocked kick. They then kick off from their 15.</li>
+<li><b>Overtime:</b> regular season games can end tied. Playoffs: coin toss; each team gets a series from the half line; repeat until one team scores and the other doesn't. An interception flips the series; a pick-six ends it.</li>
+</ul></div></details>
+
+<details><summary>Penalties — 5 yards</summary><div class="body"><ul>
+<li>Delay of game / time count</li><li>Encroachment · False start · Offside</li><li>Illegal snap</li>
+<li><b>Illegal forward pass (loss of down)</b></li><li><b>Intentional grounding (loss of down)</b></li>
+<li>Jumping with the ball · Offensive spinning · Flag guarding (ball-carrier fouls also lose the down)</li>
+<li>Illegal substitution · Illegal rushing</li>
+<li>Kicking the ball forward (from the spot) · Stripping the ball (defense, dead ball) · Rush penalty inside the 5</li>
+</ul></div></details>
+
+<details><summary>Penalties — 10 yards</summary><div class="body"><ul>
+<li><b>Offensive pass interference (loss of down)</b></li>
+<li><b>Defensive pass interference — automatic first down at the spot.</b> No PI if the ball is uncatchable, or after any eligible receiver has touched it. Tangled feet alone isn't PI; tripping from behind is; face-guarding is. Incidental contact while both play the ball is not PI.</li>
+<li>Holding (grasping/encircling) · Illegal use of hands · Illegal contact · Blocking · Clipping · Tripping</li>
+<li>Pyramiding (using a teammate to get height on a block)</li>
+<li><b>Roughing the passer (automatic first down)</b> · Contacting the kicker (not if pushed into them by the kicking team, or slight incidental contact on a block attempt)</li>
+<li>Unsportsmanlike conduct · Obstruction/interference · Personal foul · Unnecessary roughness · Illegal equipment · Illegally secured flag belt</li>
+</ul></div></details>
+
+<details><summary>Enforcement &amp; ejections</summary><div class="body"><ul>
+<li><b>Running play:</b> mark off from the end of the run — except an offensive foul behind the end of the run, marked from the spot of the foul.</li>
+<li><b>Ball in flight:</b> from the previous spot.</li>
+<li><b>Half the distance</b> when a 10-yard penalty would be inside the offender's 20, or a 5-yard penalty inside their 10.</li>
+<li><b>Double foul</b> (both teams, no change of possession): net the yardage and replay the down at the new spot.</li>
+<li>Repeated defensive fouls near the goal line to burn clock → officials may award the touchdown.</li>
+<li><b>Ejection:</b> two unsportsmanlike fouls, or intent to injure / verbal or physical abuse of an official, staff, participant or spectator. Ejected players leave the bench and premises immediately.</li>
+<li><b>Serious offences</b> (immediate removal + disciplinary review): excessive fouls, abusive language or gestures, entering the field to confront, physical/aggressive behaviour (incl. spitting, biting), violent conduct.</li>
+<li>Intentional contact of any kind — blocking, holding — is prohibited.</li>
+</ul></div></details>`;
+  function diagModal() {
+    const when = (t) => t ? new Date(t).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit', second: '2-digit' }) : '—';
+    const errs = diag.errors.slice(-6).reverse().map((e) => `<div><b>${when(e.t)}</b><code>${esc(e.where)} ${esc(e.code)} ${esc(e.message)}</code></div>`).join('') || '<div><b>errors</b><span>none this session</span></div>';
+    openModal(`<div class="eyebrow">Diagnostics</div>
+      <div class="diag">
+        <b>version</b><span>v${VERSION}</span>
+        <b>cloud</b><span>${dbState === 'ready' ? 'connected' : dbState === 'none' ? 'unavailable in this view' : 'connecting…'}</span>
+        <b>status</b><span>${SYNC_MSG[syncState]}</span>
+        <b>last cloud save</b><span>${when(lastCloudWrite)}</span>
+        <b>opened</b><span>${when(diag.boot)}</span>
+        <b>phone storage</b><span>${diag.storagePersisted ? 'survived relaunch' : (IN_VIEWER ? 'fresh this launch (normal in the Claude viewer on iPhone)' : 'first launch on this phone')}</span>
+        <b>mode</b><span>${IN_VIEWER ? 'Claude viewer' : 'standalone app'}${window.__swReady ? ' · offline ready' : ''}</span>
+        ${errs}
+      </div>
+      <div class="stack">
+        <button class="btn" data-act="retrySync">Retry cloud save now</button>
+        <button class="btn" data-act="copyBackup">Copy backup of everything</button>
+        <button class="btn" data-act="importBackup">Import a backup</button>
+        <button class="btn ghost" data-act="reloadApp">Reload app</button>
+      </div>
+      <button class="link" data-act="close">Close</button>`);
+  }
+  function confirmModal(title, body, actLabel, act, danger) {
+    openModal(`<h2>${title}</h2><div class="muted">${body}</div>
+      ${slideHtml(act, actLabel, danger ? 'stop' : 'primary')}
+      <button class="link" data-act="close">Cancel</button>`);
+  }
+  function slideHtml(act, label, kind = 'primary', extra = '') {
+    return `<div class="slide ${kind}" data-slide="${act}" ${extra}><div class="slide-label">${label}</div><div class="slide-hint">›››</div><div class="slide-knob"></div></div>`;
+  }
+
+  /* ---------- share ---------- */
+  function summaryText(game) {
+    const t = game.teams;
+    const when = shortDate(game.endedAt || game.createdAt) + ' ' + shortTime(game.startedAt || game.createdAt);
+    const lines = [
+      'Flag football — ' + when,
+      `${t[0].name} (${t[0].flag}) ${t[0].score} – ${t[1].score} ${t[1].name} (${t[1].flag})`,
+      game.status !== 'over' && game.status !== 'final' ? '(in progress)' : 'FINAL'
+    ];
+    if (game.log.length) { lines.push('', 'Scoring:'); game.log.forEach((e) => { const l = logLine(game, e); lines.push(`${l.stamp}  ${l.text}  ${l.pts}`); }); }
+    const fp = game.fairPlay;
+    if (fp && (fp[0].score || fp[1].score)) {
+      lines.push('', 'Fair play (1–5):');
+      [0, 1].forEach((i) => lines.push(`${t[i].name}: ${fp[i].score || '—'}${fp[i].note ? '  "' + fp[i].note + '"' : ''}  (rated by ${t[other(i)].name})`));
+    }
+    return lines.join('\n');
+  }
+  async function share(game) {
+    const text = summaryText(game);
+    try { if (navigator.share) { await navigator.share({ text }); return; } } catch (e) { if (e && e.name === 'AbortError') return; }
+    try { await navigator.clipboard.writeText(text); toast('Score copied'); } catch (e) { openModal(`<div class="eyebrow">Score</div><textarea style="width:100%;height:220px;font:15px/1.4 monospace;background:var(--surface);color:var(--ink);border:2px solid var(--line);border-radius:12px;padding:10px">${esc(text)}</textarea><button class="btn primary" data-act="close">Close</button>`); }
+  }
+
+  /* ---------- sound / haptics / wake ---------- */
+  let AC = null;
+  function unlockAudio() { try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); if (AC.state === 'suspended') AC.resume(); } catch (e) {} }
+  function beep(seq) {   // seq: [[freqHz, durMs], ...] — best effort, never throws
+    try { if (navigator.vibrate) navigator.vibrate(seq.map((x) => x[1]).flatMap((d) => [d, 120])); } catch (e) {}
+    try {
+      if (!AC) return;
+      if (AC.state !== 'running') AC.resume();
+      let t = AC.currentTime;
+      seq.forEach(([f, d]) => {
+        const o = AC.createOscillator(); const gn = AC.createGain();
+        o.type = 'square'; o.frequency.value = f; gn.gain.setValueAtTime(0.0001, t);
+        gn.gain.exponentialRampToValueAtTime(0.5, t + 0.01); gn.gain.exponentialRampToValueAtTime(0.0001, t + d / 1000);
+        o.connect(gn); gn.connect(AC.destination); o.start(t); o.stop(t + d / 1000 + 0.02); t += d / 1000 + 0.12;
+      });
+    } catch (e) {}
+  }
+  const BUZZ = [[440, 900]], WARN = [[880, 150], [880, 150], [880, 150]];
+  async function requestWake() { try { if ('wakeLock' in navigator && !wakeLock) { wakeLock = await navigator.wakeLock.request('screen'); wakeLock.addEventListener('release', () => { wakeLock = null; }); } } catch (e) {} }
+  function releaseWake() { try { if (wakeLock) wakeLock.release(); } catch (e) {} wakeLock = null; }
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { if (current === 'board') requestWake(); tick(); } });
+
+  let toastTimer;
+  function toast(msg) { const t = $('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 1800); }
+
+  /* ---------- clock tick ---------- */
+  let lastTick = Date.now(), stopKey = '', stopActive = null;
+  function tick() {
+    const now = Date.now(); const gap = now - lastTick; lastTick = now;
+    const game = g(); if (!game || current !== 'board') return;
+    const ms = remainingMs(game);
+    if (game.status === 'live' && ms <= 0) {
+      // expired while the page was suspended or closed (not just now on screen)
+      game.expiredAway = gap > 5000 || (running(game) && now - game.clock.since - game.clock.remaining > 5000);
+      expireHalf(game); return;
+    }   // running out, or stuck stopped at 0:00
+    if (game.status === 'live' && game.half === 2 && ms <= 60000) {
+      const st = isStopTime(game);
+      const key = game.id + ':' + game.half;
+      if (!game.warned) {
+        game.warned = true; save(); stopKey = key; stopActive = st;
+        if (st) { beep(WARN); showAlert('stop', 'Last minute', 'Stop time', 'Within 14 — stop the clock on incompletions, out of bounds, first downs and scores.', 6000); }
+        else { beep(WARN); showAlert('run', 'Last minute', 'Clock runs', 'Up by more than 14 — no stop time.', 4000); }
+      } else if (stopKey !== key) { stopKey = key; stopActive = st; }
+      else if (stopActive !== st) {
+        stopActive = st;
+        if (st) { beep(WARN); showAlert('stop', 'Score change', 'Stop time on', 'Now within 14 — stop the clock on incompletions, out of bounds, first downs and scores.', 5000); }
+        else { beep(WARN); showAlert('off', 'Score change', 'Stop time off', 'Up by more than 14 — the clock runs.', 5000); }
+      }
+    }
+    renderClock();
+  }
+  let alertTimer;
+  function showAlert(kind, eyebrow, title, body, ms) {
+    const a = $('alert'); a.dataset.kind = kind; $('alertEyebrow').textContent = eyebrow; $('alertTitle').textContent = title; $('alertBody').textContent = body;
+    a.hidden = false; clearTimeout(alertTimer); alertTimer = setTimeout(() => { a.hidden = true; }, ms);
+  }
+  let bannerPending = false;   // a half ended while another sheet was open; show its banner when that closes
+  function expireHalf(game) {
+    // State first, so a failed sound or modal can never leave the half half-ended.
+    stopClock(game); game.clock.remaining = 0;
+    if (game.half === 1) { game.status = 'halftime'; game.clock.remaining = game.halfMin * 60000; }
+    else { game.status = 'over'; }
+    save();
+    try { renderBoard(); } catch (e) {}
+    beep(BUZZ);
+    if ($('modal').classList.contains('open')) bannerPending = true;
+    else { try { game.half === 1 ? halftimeModal() : finalModal(); } catch (e) {} }
+  }
+  function showPendingBanner() {
+    if (!bannerPending) return; bannerPending = false;
+    const game = g(); if (!game || $('modal').classList.contains('open')) return;
+    if (game.status === 'halftime') halftimeModal(); else if (game.status === 'over') finalModal();
+  }
+  setInterval(tick, 250);
+
+  /* ---------- actions ---------- */
+  const actions = {
+    async newGame() {
+      if (dbState === 'pending') { toast('Checking your account for a game in progress…'); await cloudReady; }
+      const cur = g();
+      if (cur && cur.status !== 'setup') { confirmModal('Start a new game?', 'A game is in progress (' + esc(cur.teams[0].name) + ' vs ' + esc(cur.teams[1].name) + '). It will be discarded, not saved.', 'Discard & start new', 'newGameConfirm', true); return; }
+      actions.newGameConfirm();
+    },
+    newGameConfirm() { closeModal(); S.current = newGame(); save(); renderSetup(); show('setup'); },
+    goHome() { closeModal(); const cur = g(); if (cur && cur.status === 'setup') S.current = null; save(); renderHome(); show('home'); },
+    goSetup() { g().status = 'setup'; save(); renderSetup(); show('setup'); },
+    resume() { const game = g(); if (game.status === 'ready') { renderReady(); show('ready'); } else { renderBoard(); show('board'); if (game.pending) conversionModal(); else if (game.status === 'halftime') halftimeModal(); else if (game.status === 'over') finalModal(); } },
+    viewGame(d) { viewGameModal(d.id); },
+    shareSaved(d) { const game = S.games.find((x) => x.id === d.id); if (game) share(game); },
+    deleteSaved(d) { confirmModal('Delete this game?', 'It will be removed from the saved list.', 'Delete', 'deleteSavedConfirm', true); $('sheet').dataset.id = d.id; },
+    deleteSavedConfirm() { const id = $('sheet').dataset.id; const gone = S.games.find((x) => x.id === id); if (gone) { S.games = S.games.filter((x) => x.id !== id); S.unsyncedGames = S.unsyncedGames.filter((x) => x !== id); S.unsyncedDeletes.push(id); } save(); closeModal(); renderHome(); },
+
+    setFlag(d) { const game = g(); const i = Number(d.team); game.teams[i].flag = d.flag; game.teams[other(i)].flag = d.flag === 'yellow' ? 'blue' : 'yellow'; save(); renderSetup(); },
+    setKick(d) { g().kickoff = Number(d.team); save(); renderSetup(); },
+    toReady() {
+      const game = g(); readSetup();
+      const t = game.teams; const err = $('setupErr');
+      if (!t[0].name.trim() || !t[1].name.trim()) { err.textContent = 'Enter both team names.'; return; }
+      if (game.kickoff === null) { err.textContent = 'Pick who kicks off the 1st half.'; return; }
+      if (!(game.halfMin >= 1 && game.halfMin <= 60)) { err.textContent = 'Half length must be 1–60 minutes.'; return; }
+      t[0].name = t[0].name.trim(); t[1].name = t[1].name.trim();
+      game.clock.remaining = game.halfMin * 60000; game.status = 'ready'; S.settings.halfMin = game.halfMin;
+      save(); renderReady(); show('ready');
+    },
+    startGame() { unlockAudio(); const game = g(); game.status = 'live'; game.startedAt = Date.now(); startClock(game); save(); renderBoard(); show('board'); },
+
+    toggleClock(d, force) {
+      unlockAudio(); const game = g();
+      if (game.status === 'halftime') { halftimeModal(); return; }
+      if (game.status === 'over') { finalModal(); return; }
+      if (running(game)) {
+        if (!force && !isStopTime(game)) { toast('Slide below to stop the clock'); return; }
+        stopClock(game);
+      } else { if (remainingMs(game) <= 0) return; startClock(game); }
+      save(); renderClock();
+    },
+    stopClockConfirmed() { const game = g(); if (!game || !running(game)) return; stopClock(game); save(); renderClock(); },
+    startHalf2() { unlockAudio(); const game = g(); closeModal(); bannerPending = false; game.half = 2; game.status = 'live'; game.warned = false; game.expiredAway = false;
+      // start from whatever the halftime clock shows (full length unless it was set from the menu)
+      game.clock = { remaining: game.clock.remaining > 0 ? Math.min(game.clock.remaining, game.halfMin * 60000) : game.halfMin * 60000, since: null }; startClock(game); save(); renderBoard(); },
+    endHalf() { closeModal(); const game = g(); confirmModal(game.half === 1 ? 'End the 1st half now?' : 'End the game now?', 'The clock will be set to 0:00.', game.half === 1 ? 'End half' : 'End game', 'endHalfConfirm'); },
+    endHalfConfirm() { closeModal(); expireHalf(g()); },
+
+    touchdown(d) {
+      unlockAudio(); const game = g(); if (game.pending) { conversionModal(); return; }
+      const i = Number(d.team);
+      game.teams[i].score += 6; addLog(game, { team: i, type: 'td', pts: 6 }); game.pending = { team: i };
+      save(); renderBoard(); conversionModal();
+    },
+    conv(d) {
+      const game = g(); const p = game.pending; if (!p) { closeModal(); return; }
+      const pts = Number(d.pts);
+      game.teams[p.team].score += pts; addLog(game, { team: p.team, type: 'conv' + pts, pts });
+      game.pending = null; save(); closeModal(); renderBoard(); bannerPending = false;
+      if (game.status === 'halftime') halftimeModal(); else if (game.status === 'over') finalModal();
+    },
+    undoTD() { const game = g(); const p = game.pending; if (!p) { closeModal(); return; } game.teams[p.team].score -= 6; game.log.pop(); game.pending = null; save(); closeModal(); renderBoard(); toast('Touchdown removed'); showPendingBanner(); },
+    undo() {
+      const game = g(); const last = game.log[game.log.length - 1]; if (!last) return;
+      const l = logLine(game, last);
+      openModal(`<div class="eyebrow">Undo last play</div>
+        <div class="card"><div style="font-size:20px"><b>${esc(l.text)}</b> <span class="num">${l.pts}</span></div><div class="muted num">${l.stamp}</div></div>
+        ${slideHtml('undoConfirm', 'Slide to undo', 'stop')}
+        <button class="link" data-act="close">Keep it</button>`);
+    },
+    undoConfirm() {
+      closeModal();
+      const game = g(); const last = game.log.pop(); if (!last) return;
+      game.teams[last.team].score -= last.pts;
+      if (last.type === 'td') game.pending = null;
+      else if (last.type.startsWith('conv')) { game.pending = { team: last.team }; }
+      save(); renderBoard(); toast('Undid: ' + game.teams[last.team].name + ' ' + LABEL[last.type]);
+      if (game.pending) conversionModal();
+    },
+    adj(d) {
+      const game = g(); const i = Number(d.team); const dd = Number(d.d);
+      if (adjStaged[i] + dd < 0) return; adjStaged[i] += dd; $('adj' + i).textContent = adjStaged[i];
+      const diffs = [0, 1].map((k) => adjStaged[k] - game.teams[k].score);
+      $('adjHint').textContent = diffs.every((x) => x === 0) ? 'Nothing changed yet. Tap ±1, then slide to apply.' : 'Pending: ' + [0, 1].filter((k) => diffs[k]).map((k) => game.teams[k].name + ' ' + (diffs[k] > 0 ? '+' : '') + diffs[k]).join(', ');
+    },
+    adjustApply() {
+      const game = g(); let changed = false;
+      [0, 1].forEach((i) => { const dd = adjStaged[i] - game.teams[i].score; if (dd) { game.teams[i].score += dd; addLog(game, { team: i, type: 'adjust', pts: dd }); changed = true; } });
+      if (changed) save(); closeModal(); renderBoard(); showPendingBanner(); toast(changed ? 'Score adjusted' : 'No change');
+    },
+    adjustScore() { adjustModal(); },
+    adjustClock() { clockModal(false); },
+    adjustClockRevive() { clockModal(true); },
+    applyClock() {
+      const game = g(); const m = Math.max(0, Number($('setMin').value) || 0); const s = Math.min(59, Math.max(0, Number($('setSec').value) || 0));
+      stopClock(game); game.clock.remaining = Math.min(game.halfMin * 60000, (m * 60 + s) * 1000);
+      if (reviveOnSet && (game.status === 'over' || game.status === 'halftime') && game.clock.remaining > 0) { game.status = 'live'; game.expiredAway = false; bannerPending = false; }
+      else if (reviveOnSet) bannerPending = true;   // came from the banner but nothing revived: bring the banner back
+      save(); closeModal(); renderBoard(); showPendingBanner();
+    },
+    showLog() { logModal(g()); },
+    menu() { menuModal(); },
+    finalModal() { finalModal(); },
+    fpScore(d) {
+      const game = g(); if (!game) return; const to = Number(d.to); const n = Number(d.score);
+      const fp = fairPlayOf(game); fp[to].score = fp[to].score === n ? null : n; save();
+      $('sheet').querySelectorAll(`[data-act="fpScore"][data-to="${to}"]`).forEach((b) => b.setAttribute('aria-pressed', String(Number(b.dataset.score) === fp[to].score)));
+      // reveal or hide the finish slide as the ratings become complete
+      const wrap = $('finishWrap'); if (!wrap) return;
+      const has = !!wrap.querySelector('[data-slide="finish"]'); const complete = fairPlayComplete(game);
+      const hint = wrap.querySelector('.hint');
+      if (complete && !has) { if (hint) hint.remove(); wrap.insertAdjacentHTML('afterbegin', slideHtml('finish', 'Slide to save &amp; finish')); fitSlideLabels(); }
+      else if (!complete && has) { wrap.querySelector('[data-slide="finish"]').outerHTML = '<div class="hint" style="text-align:center">Enter both fair play scores to finish. <button class="link" data-act="finishWithoutFP" style="display:inline;padding:0">Finish without them</button></div>'; }
+    },
+    finishWithoutFP() { confirmModal('Finish without fair play scores?', 'IM requires each team to rate the other after every game. Only skip this if a team has already left.', 'Finish anyway', 'finish', true); },
+    halftimeModal() { closeModal(); halftimeModal(); },
+    share() { share(g()); },
+    async finish() {
+      if (dbState === 'pending') await cloudReady;      // the cloud may restore a different game meanwhile
+      const game = g(); if (!game || !$('modal').classList.contains('open')) { closeModal(); renderHome(); show('home'); return; }
+      stopClock(game); game.status = 'final'; game.endedAt = game.endedAt || Date.now(); game.pending = null;
+      if (!S.games.some((x) => x.id === game.id)) S.games.unshift(game);
+      S.current = null; S.updatedAt = Date.now();
+      if (!DB && !S.unsyncedGames.includes(game.id)) S.unsyncedGames.push(game.id);   // upload once the cloud is there
+      localSave();
+      let cloudOk = !DB;   // no cloud in this view: nothing to confirm
+      if (DB) {
+        try { await DB.doc('games/' + game.id).set(game); dirty = true; await writeCurrent(); cloudOk = true; }
+        catch (e) { noteError('finish', e); failStreak++; }
+      }
+      if (!cloudOk) {
+        // Keep the game live so nothing is lost; let them retry.
+        S.games = S.games.filter((x) => x.id !== game.id);
+        game.status = 'over'; S.current = game; S.updatedAt = Date.now(); localSave(); setSync('error');
+        const err = $('finishErr'); if (err) err.textContent = "Couldn't save to your account (" + ((lastSyncError && lastSyncError.code) || 'no connection') + "). Nothing is lost — try again in a moment.";
+        queueSync(3000); return;
+      }
+      closeModal(); renderHome(); show('home'); setSync(DB ? 'synced' : 'local'); toast('Game saved');
+    },
+    diagnostics() { diagModal(); },
+    rules() { rulesModal(); },
+    retrySync() { failStreak = 0; dirty = dirty || !!S.current; closeModal(); if (DB) flush(); else toast(IN_VIEWER ? 'No cloud connection in this view' : 'This app saves on the phone — no cloud to retry'); },
+    importBackup() {
+      openModal(`<div class="eyebrow">Import a backup</div>
+        <div class="hint">Paste the JSON from "Copy backup" on another phone or version. Games are merged by id; an in-progress game is only imported if there isn't one here.</div>
+        <textarea id="importText" style="width:100%;height:200px;font:12px/1.3 monospace;background:var(--surface);color:var(--ink);border:2px solid var(--line);border-radius:12px;padding:10px" placeholder="{ &quot;version&quot;: …"></textarea>
+        <div class="err" id="importErr"></div>
+        <div class="row"><button class="btn ghost" data-act="close">Cancel</button><button class="btn primary" data-act="importApply">Import</button></div>`);
+    },
+    importApply() {
+      let data; const err = $('importErr');
+      try { data = JSON.parse($('importText').value); } catch (e) { err.textContent = "That isn't valid backup JSON."; return; }
+      const games = Array.isArray(data.games) ? data.games.filter((x) => x && x.id && Array.isArray(x.teams)) : [];
+      const have = new Set(S.games.map((x) => x.id)); let added = 0;
+      games.forEach((x) => { if (!have.has(x.id)) { S.games.push(x); have.add(x.id); added++; if (DB) S.unsyncedGames.push(x.id); } });
+      S.games.sort((a, b) => (b.endedAt || b.createdAt) - (a.endedAt || a.createdAt));
+      let tookCurrent = false;
+      if (!S.current && data.current && data.current.teams) { S.current = data.current; tookCurrent = true; }
+      save(); closeModal(); renderHome(); show('home');
+      toast('Imported ' + added + ' game' + (added === 1 ? '' : 's') + (tookCurrent ? ' and the game in progress' : ''));
+    },
+    async copyBackup() {
+      const text = JSON.stringify({ version: VERSION, exported: Date.now(), current: S.current, games: S.games }, null, 1);
+      try { await navigator.clipboard.writeText(text); toast('Backup copied — paste it somewhere safe'); }
+      catch (e) { openModal(`<div class="eyebrow">Backup</div><textarea style="width:100%;height:240px;font:12px/1.3 monospace;background:var(--surface);color:var(--ink);border:2px solid var(--line);border-radius:12px;padding:10px">${esc(text)}</textarea><button class="btn primary" data-act="close">Close</button>`); }
+    },
+    async reloadApp() {
+      clearTimeout(syncTimer); toast('Saving before reload…');
+      const t0 = Date.now(); flush();
+      while (Date.now() - t0 < 4000 && DB && (flushing || dirty || S.unsyncedGames.length || S.unsyncedDeletes.length)) { await new Promise((r) => setTimeout(r, 150)); if (!flushing) flush(); }
+      location.reload();
+    },
+    hideAlert() { clearTimeout(alertTimer); $('alert').hidden = true; },
+    abandon() { confirmModal('Abandon this game?', 'The score and log will be discarded, not saved.', 'Abandon', 'abandonConfirm', true); },
+    abandonConfirm() { S.current = null; save(); closeModal(); renderHome(); show('home'); },
+    close() { if (!modalLock) { closeModal(); showPendingBanner(); } },
+    scrim() { if (!modalLock) { closeModal(); showPendingBanner(); } }
+  };
+
+  function readSetup() {
+    const game = g();
+    game.teams[0].name = $('name0').value; game.teams[1].name = $('name1').value;
+    game.halfMin = Number($('halfMin').value) || 0;
+  }
+  document.addEventListener('input', (e) => {
+    const el = e.target; if (!el || !el.id || !el.id.startsWith('fpNote')) return;
+    const game = g(); if (!game) return; fairPlayOf(game)[Number(el.dataset.to)].note = el.value.slice(0, 200); save();
+  });
+  ['name0', 'name1', 'halfMin'].forEach((id) => $(id).addEventListener('input', () => { readSetup(); save(); $('kick0').textContent = g().teams[0].name || 'Team 1'; $('kick1').textContent = g().teams[1].name || 'Team 2'; }));
+
+  /* ---------- portrait lock ---------- */
+  const isPhone = () => Math.min(screen.width, screen.height) < 600 && window.matchMedia('(pointer: coarse)').matches;
+  function deviceAngle() {
+    if (screen.orientation && typeof screen.orientation.angle === 'number') return screen.orientation.angle;
+    if (typeof window.orientation === 'number') return (window.orientation + 360) % 360;
+    return 0;
+  }
+  function applyOrientation() {
+    const root = document.documentElement;
+    const sideways = isPhone() && window.innerWidth > window.innerHeight;
+    const ccw = deviceAngle() === 90;
+    root.classList.toggle('rot', sideways);
+    root.classList.toggle('rot-ccw', sideways && ccw);
+    root.classList.toggle('rot-cw', sideways && !ccw);
+    if (sideways) document.body.scrollTop = 0;
+  }
+  window.addEventListener('resize', applyOrientation);
+  window.addEventListener('orientationchange', () => setTimeout(applyOrientation, 50));
+  if (screen.orientation && screen.orientation.addEventListener) screen.orientation.addEventListener('change', () => setTimeout(applyOrientation, 50));
+  try { if (screen.orientation && screen.orientation.lock) screen.orientation.lock('portrait').catch(() => {}); } catch (e) {}
+  applyOrientation();
+  // Under the rotation the browser scrolls on the wrong axis, so drive scrolling by hand.
+  const rotated = () => document.documentElement.classList.contains('rot');
+  function scrollerFor(el) {
+    while (el && el !== document.documentElement) {
+      if (el === document.body) return !$('modal').classList.contains('open') && el.scrollHeight > el.clientHeight + 1 ? el : null;
+      if (el.classList && el.classList.contains('sheet')) return el.scrollHeight > el.clientHeight + 1 ? el : null;
+      el = el.parentNode;
+    }
+    return null;
+  }
+  let touch = null;
+  document.addEventListener('touchstart', (e) => {
+    const tg = e.target; const inField = tg && (tg.tagName === 'INPUT' || tg.tagName === 'TEXTAREA' || (tg.closest && tg.closest('.slide')));
+    if (!rotated() || e.touches.length !== 1 || inField) { touch = null; return; }
+    touch = { x: e.touches[0].clientX, el: scrollerFor(e.target) };
+  }, { passive: true });
+  document.addEventListener('touchmove', (e) => {
+    if (!rotated() || !touch || e.touches.length !== 1) return;
+    const x = e.touches[0].clientX; const dx = x - touch.x; touch.x = x;
+    if (touch.el) touch.el.scrollTop -= document.documentElement.classList.contains('rot-ccw') ? dx : -dx;
+    e.preventDefault();
+  }, { passive: false });
+
+  /* ---------- slide-to-confirm engine ---------- */
+  function resetSlide(el) { el.classList.remove('dragging', 'done'); const k = el.querySelector('.slide-knob'); if (k) k.style.transform = ''; }
+  function fitSlideLabels() {
+    document.querySelectorAll('.slide .slide-label').forEach((l) => {
+      l.style.fontSize = '';
+      let size = parseFloat(getComputedStyle(l).fontSize) || 22;
+      for (let i = 0; i < 8 && l.scrollWidth > l.clientWidth && size > 12; i++) { size -= 1; l.style.fontSize = size + 'px'; }
+    });
+  }
+  window.addEventListener('resize', () => setTimeout(fitSlideLabels, 60));
+  let drag = null;
+  function slideAxisDelta(e) {
+    // Under the portrait-lock rotation the slider's visual x-axis is the device's y-axis.
+    const root = document.documentElement;
+    if (root.classList.contains('rot-ccw')) return -(e.clientY - drag.y0);
+    if (root.classList.contains('rot-cw')) return e.clientY - drag.y0;
+    return e.clientX - drag.x0;
+  }
+  document.addEventListener('pointerdown', (e) => {
+    const knob = e.target.closest && e.target.closest('.slide-knob'); if (!knob) return;
+    const el = knob.closest('.slide'); if (!el || el.classList.contains('done')) return;
+    const w = el.getBoundingClientRect(); const trackLen = Math.max(w.width, w.height);
+    const max = Math.max(60, (trackLen || 320) - 56 - 12);
+    drag = { el, knob, x0: e.clientX, y0: e.clientY, max, x: 0, id: e.pointerId };
+    el.classList.add('dragging');
+    try { knob.setPointerCapture(e.pointerId); } catch (err) {}
+    e.preventDefault();
+  });
+  document.addEventListener('pointermove', (e) => {
+    if (!drag || (e.pointerId !== undefined && drag.id !== undefined && e.pointerId !== drag.id)) return;
+    drag.x = Math.max(0, Math.min(drag.max, slideAxisDelta(e)));
+    drag.knob.style.transform = 'translateX(' + drag.x + 'px)';
+  });
+  function endDrag() {
+    if (!drag) return;
+    const { el, knob, x, max } = drag; drag = null;
+    el.classList.remove('dragging');
+    if (x >= max * 0.8) {
+      knob.style.transform = 'translateX(' + max + 'px)'; el.classList.add('done');
+      const fn = actions[el.dataset.slide];
+      setTimeout(() => { if (fn) fn(el.dataset); if (document.contains(el)) resetSlide(el); }, 120);
+    } else { knob.style.transform = ''; }
+  }
+  document.addEventListener('pointerup', endDrag);
+  document.addEventListener('pointercancel', endDrag);
+
+  // Any Bluetooth clicker or keyboard: space / enter / arrows / page keys toggle the clock.
+  document.addEventListener('keydown', (e) => {
+    const t = e.target; if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA')) return;
+    if (!['Space', 'Enter', 'PageDown', 'PageUp', 'ArrowRight', 'ArrowLeft', 'ArrowUp', 'ArrowDown', 'KeyB', 'MediaPlayPause'].includes(e.code || e.key)) return;
+    e.preventDefault();
+    if (!$('alert').hidden) { actions.hideAlert(); return; }
+    if (current !== 'board' || $('modal').classList.contains('open')) return;
+    actions.toggleClock({}, true);   // a physical button can't be a pocket touch
+  });
+  document.addEventListener('click', (e) => {
+    const el = e.target.closest('[data-act]'); if (!el) return;
+    const fn = actions[el.dataset.act]; if (fn) { e.preventDefault(); fn(el.dataset); }
+  });
+
+  /* ---------- boot ---------- */
+  function boot() {
+    const cur = g();
+    if (cur && cur.status === 'setup') { renderSetup(); show('setup'); }
+    else if (cur && cur.status === 'ready') { renderReady(); show('ready'); }
+    else if (cur) { actions.resume(); }
+    else { renderHome(); show('home'); }
+  }
+  boot();
+  initCloud();
+})();
+</script>

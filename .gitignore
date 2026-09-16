@@ -1,0 +1,4 @@
+# UBC's rulebook PDF is their copyright — keep it out of the public repo
+*.pdf
+qa/node_modules/
+.DS_Store
