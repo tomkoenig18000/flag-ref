@@ -11,7 +11,7 @@ Scoreboard + clock + quick rules for refereeing UBC Point Grey Cup flag football
 ## Release
 1. Bump `const VERSION` and the `vN` label in `src/app.html` (the home screen shows it; that's how refs confirm an update).
 2. `python3 build.py && (cd qa && npm test)` — all lines must PASS.
-3. Commit and push `main`; Pages deploys in ~1 min. Refs get it on their next launch with signal.
+3. Commit and push `main`; Pages deploys in ~1 min (CDN can lag up to 10). Refs get it on their next launch with signal, or when they return to the home screen after the foreground update check (`applyUpdate()`).
 
 ## Rules that shape the code
 - Every irreversible or accidental-prone change confirms by **slide** (`slideHtml()` / `data-slide`), never a tap. Taps only navigate, stage, or start the clock.

@@ -39,7 +39,16 @@ head = f'''<!doctype html>
 <body>
 <script>
   // Offline support: the service worker caches the app shell; index.html is fetched network-first.
-  if ('serviceWorker' in navigator) {{ navigator.serviceWorker.register('sw.js').then(() => {{ window.__swReady = true; }}).catch(() => {{}}); }}
+  if ('serviceWorker' in navigator) {{
+    const hadController = !!navigator.serviceWorker.controller;
+    navigator.serviceWorker.register('sw.js').then((reg) => {{
+      window.__swReady = true;
+      // iOS resumes a "closed" PWA from memory, so re-check for a new version whenever we come back to the foreground
+      document.addEventListener('visibilitychange', () => {{ if (document.visibilityState === 'visible') reg.update().catch(() => {{}}); }});
+    }}).catch(() => {{}});
+    // a newer worker took over while this page was open: it is running old code until it reloads (the app decides when)
+    if (hadController) navigator.serviceWorker.addEventListener('controllerchange', () => {{ window.__swUpdated = true; document.dispatchEvent(new Event('swupdated')); }});
+  }}
 </script>
 {body.strip()}
 </body>
@@ -69,7 +78,8 @@ site = ROOT / 'docs'
 const CACHE = 'flagref-v{VERSION}';
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/apple-touch-icon.png'];
 self.addEventListener('install', (e) => {{
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));
+  // cache: 'reload' bypasses the HTTP cache (Pages serves max-age=600) so the new worker never pre-caches a stale shell
+  e.waitUntil(caches.open(CACHE).then((c) => Promise.all(SHELL.map((u) => fetch(u, {{ cache: 'reload' }}).then((r) => c.put(u, r))))).then(() => self.skipWaiting()));
 }});
 self.addEventListener('activate', (e) => {{
   e.waitUntil(caches.keys().then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)))).then(() => self.clients.claim()));
@@ -84,8 +94,9 @@ self.addEventListener('fetch', (e) => {{
     e.respondWith(caches.match(req).then((hit) => hit || fetch(req).then((res) => {{ const copy = res.clone(); caches.open(CACHE).then((c) => c.put(req, copy)); return res; }}).catch(() => hit)));
     return;
   }}
-  // app shell: network-first so a cold launch online always gets the newest version; cache when offline
-  e.respondWith(fetch(req).then((res) => {{ const copy = res.clone(); caches.open(CACHE).then((c) => c.put(req, copy)); return res; }})
+  // app shell: network-first so a launch online always gets the newest version; cache when offline.
+  // 'no-cache' forces a revalidation past the browser HTTP cache (a 304 when nothing changed, so it is cheap).
+  e.respondWith(fetch(req, {{ cache: 'no-cache' }}).then((res) => {{ const copy = res.clone(); caches.open(CACHE).then((c) => c.put(req, copy)); return res; }})
     .catch(() => caches.match(req).then((hit) => hit || (req.mode === 'navigate' ? caches.match('./index.html') : undefined))));
 }});
 ''')

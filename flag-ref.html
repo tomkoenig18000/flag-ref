@@ -313,7 +313,7 @@
       <svg viewBox="0 0 44 44" aria-hidden="true"><rect x="2" y="2" width="40" height="40" rx="10" fill="var(--surface2)"/><path d="M13 9v27" stroke="var(--ink)" stroke-width="3" stroke-linecap="round"/><path d="M15 10h16l-4 6 4 6H15z" fill="var(--yellow)"/><path d="M15 23h13l-3 5 3 5H15z" fill="var(--blue)"/></svg>
       <div><h1>Flag Ref</h1><div class="eyebrow">Point Grey Cup · UBC Rec</div></div>
     </div>
-    <button class="link" data-act="diagnostics" style="padding:4px 0">v19</button>
+    <button class="link" data-act="diagnostics" style="padding:4px 0">v20</button>
   </div>
   <button class="sync" id="sync" data-state="saving" data-act="diagnostics">Connecting to your account…</button>
   <div id="resumeWrap"></div>
@@ -455,7 +455,7 @@
      right away, failures are shown on the board, and a finished game is
      only cleared once the cloud has confirmed it. Clock state is
      timestamps, so a running clock never generates writes by itself. */
-  const VERSION = 19;
+  const VERSION = 20;
   // Inside the Claude viewer the page has window.claude and can use the account store;
   // as a standalone home-screen app (GitHub Pages) phone storage is first-party and durable.
   const IN_VIEWER = !!(window.claude && typeof window.claude.use === 'function');
@@ -611,6 +611,7 @@
     screens.forEach((s) => { $(s).hidden = s !== id; });
     window.scrollTo(0, 0); document.body.scrollTop = 0;
     if (id === 'board') requestWake(); else releaseWake();
+    if (id === 'home') setTimeout(applyUpdate, 0);   // a downloaded update lands the next time we reach the home screen
   }
 
   function renderHome() {
@@ -1050,7 +1051,14 @@
   const BUZZ = [[440, 900]], WARN = [[880, 150], [880, 150], [880, 150]];
   async function requestWake() { try { if ('wakeLock' in navigator && !wakeLock) { wakeLock = await navigator.wakeLock.request('screen'); wakeLock.addEventListener('release', () => { wakeLock = null; }); } } catch (e) {} }
   function releaseWake() { try { if (wakeLock) wakeLock.release(); } catch (e) {} wakeLock = null; }
-  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { if (current === 'board') requestWake(); tick(); } });
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { if (current === 'board') requestWake(); tick(); applyUpdate(); } });
+  // A new version installed while the app was open (see the service worker registration in build.py). The page is still
+  // running the old code; refresh immediately when nothing is at stake, otherwise wait for the next quiet moment.
+  function applyUpdate() {
+    if (!window.__swUpdated || IN_VIEWER) return;
+    if (current === 'home' && !$('modal').classList.contains('open')) { window.__swUpdated = false; location.reload(); }
+  }
+  document.addEventListener('swupdated', () => { applyUpdate(); if (window.__swUpdated) toast('Update downloaded — applies from the home screen'); });
 
   let toastTimer;
   function toast(msg) { const t = $('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 1800); }
@@ -1276,6 +1284,8 @@
       clearTimeout(syncTimer); toast('Saving before reload…');
       const t0 = Date.now(); flush();
       while (Date.now() - t0 < 4000 && DB && (flushing || dirty || S.unsyncedGames.length || S.unsyncedDeletes.length)) { await new Promise((r) => setTimeout(r, 150)); if (!flushing) flush(); }
+      // ask for a fresh service worker too, so the reload picks up a release published since this launch
+      try { if ('serviceWorker' in navigator) { const reg = await navigator.serviceWorker.getRegistration(); if (reg) await Promise.race([reg.update(), new Promise((r) => setTimeout(r, 3000))]); } } catch (e) {}
       location.reload();
     },
     hideAlert() { clearTimeout(alertTimer); $('alert').hidden = true; },
