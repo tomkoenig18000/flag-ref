@@ -18,6 +18,9 @@ going to Caden by email.
   game ends inside the hour — set the half length in the app before kickoff.
 - **Stop a running clock only for a major delay** — a significant injury, ball stuck in a
   bush or on a roof. Nothing else stops running time; we don't add time back afterwards.
+- **Ball-carrier fouls are spot fouls assessed from the end of the run.** A run that crossed
+  the marker is still a first down, then 5 back. *Open — in the email:* is that 1st & 10 from
+  the new spot, or 1st & 15 (marker stays)? Put Caden's answer in the app's yellow note.
 - **Fair play ratings** weren't mentioned at training — the app requires both before a game
   can be finished. Ask Caden whether IM still wants them and where they go.
 

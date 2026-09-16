@@ -313,7 +313,7 @@
       <svg viewBox="0 0 44 44" aria-hidden="true"><rect x="2" y="2" width="40" height="40" rx="10" fill="var(--surface2)"/><path d="M13 9v27" stroke="var(--ink)" stroke-width="3" stroke-linecap="round"/><path d="M15 10h16l-4 6 4 6H15z" fill="var(--yellow)"/><path d="M15 23h13l-3 5 3 5H15z" fill="var(--blue)"/></svg>
       <div><h1>Flag Ref</h1><div class="eyebrow">Point Grey Cup · UBC Rec</div></div>
     </div>
-    <button class="link" data-act="diagnostics" style="padding:4px 0">v18</button>
+    <button class="link" data-act="diagnostics" style="padding:4px 0">v19</button>
   </div>
   <button class="sync" id="sync" data-state="saving" data-act="diagnostics">Connecting to your account…</button>
   <div id="resumeWrap"></div>
@@ -455,7 +455,7 @@
      right away, failures are shown on the board, and a finished game is
      only cleared once the cloud has confirmed it. Clock state is
      timestamps, so a running clock never generates writes by itself. */
-  const VERSION = 18;
+  const VERSION = 19;
   // Inside the Claude viewer the page has window.claude and can use the account store;
   // as a standalone home-screen app (GitHub Pages) phone storage is first-party and durable.
   const IN_VIEWER = !!(window.claude && typeof window.claude.use === 'function');
@@ -955,6 +955,7 @@
 <li><b>Illegal forward pass</b> (from the spot of the pass) · <b>Intentional grounding</b></li>
 <li><b>Illegal run inside the 5</b> — a hand-off or QB scramble inside the 5 (the book's "rush penalty")</li>
 <li><b>Ball-carrier fouls</b> — <b>flag guarding</b> (hand/arm or ball over the belt, dropping a shoulder to cover the flag) · <b>spinning</b> · <b>hurdling or leaping</b> · lowering the head or shoulder. Any ball-carrier infraction is 5 and loss of down.</li>
+<div class="house"><em>How we call it</em> <b>Ball-carrier fouls are spot fouls, assessed from the end of the run.</b> Let the play finish, then mark 5 back from where the carrier was downed. If the run crossed the first-down marker it is <b>still a first down</b> — the loss of down doesn't matter, the series is over anyway. <em style="color:var(--muted)">Pending</em> whether that's 1st &amp; 10 from the new spot or 1st &amp; 15 (marker stays put) — asked Caden; add his answer here.</div>
 </ul>
 <h4>10 yards</h4><ul>
 <li><b>Offensive pass interference (loss of down)</b></li>
@@ -966,7 +967,7 @@
 </ul></div></details>
 
 <details><summary>Enforcement &amp; ejections</summary><div class="body"><ul>
-<li><b>Running play:</b> mark off from the end of the run — except an offensive foul behind the end of the run, marked from the spot of the foul.</li>
+<li><b>Running play:</b> mark off from the end of the run — except an offensive foul behind the end of the run, marked from the spot of the foul. Ball-carrier fouls (flag guarding, spinning, hurdling) are enforced from the end of the run; a run past the marker is still a first down.</li>
 <li><b>Ball in flight:</b> from the previous spot.</li>
 <li><b>Half the distance</b> when a 10-yard penalty would be inside the offender's 20, or a 5-yard penalty inside their 10.</li>
 <li><b>Double foul</b> (both teams, no change of possession): net the yardage and replay the down at the new spot.</li>
