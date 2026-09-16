@@ -313,7 +313,7 @@
       <svg viewBox="0 0 44 44" aria-hidden="true"><rect x="2" y="2" width="40" height="40" rx="10" fill="var(--surface2)"/><path d="M13 9v27" stroke="var(--ink)" stroke-width="3" stroke-linecap="round"/><path d="M15 10h16l-4 6 4 6H15z" fill="var(--yellow)"/><path d="M15 23h13l-3 5 3 5H15z" fill="var(--blue)"/></svg>
       <div><h1>Flag Ref</h1><div class="eyebrow">Point Grey Cup · UBC Rec</div></div>
     </div>
-    <button class="link" data-act="diagnostics" style="padding:4px 0">v16</button>
+    <button class="link" data-act="diagnostics" style="padding:4px 0">v17</button>
   </div>
   <button class="sync" id="sync" data-state="saving" data-act="diagnostics">Connecting to your account…</button>
   <div id="resumeWrap"></div>
@@ -454,7 +454,7 @@
      right away, failures are shown on the board, and a finished game is
      only cleared once the cloud has confirmed it. Clock state is
      timestamps, so a running clock never generates writes by itself. */
-  const VERSION = 16;
+  const VERSION = 17;
   // Inside the Claude viewer the page has window.claude and can use the account store;
   // as a standalone home-screen app (GitHub Pages) phone storage is first-party and durable.
   const IN_VIEWER = !!(window.claude && typeof window.claude.use === 'function');
@@ -867,7 +867,7 @@
 <li><b>Fumbles are dead where they hit the ground</b> — nobody dives on anything. The offense keeps it. Exception: a <b>muffed kickoff or punt can be picked up and returned</b> unless the ref kills it for collision risk. A lateral caught in the air by the defense is live.</li>
 <li><b>3 downs to make 10 yards.</b> 20-second play clock from the whistle. No direct snap — QB is 3+ yards back.</li>
 <li><b>Rushing the QB:</b> Open — from the 10-yard rush line only. Women's/Mixed — after 5 steamboats. A hand-off ends the count.</li>
-<li><b>Inside the 5, the ball has to be thrown</b> — no hand-offs, no QB runs.</li>
+<li><b>Inside the 5, the ball has to be thrown</b> — no hand-offs, no QB runs. 5 yards and loss of down.</li>
 <li><b>Catch = control with one foot in bounds.</b> <b>Down = anything but a foot touches the ground</b>, including a hand.</li>
 <li><b>Scoring:</b> TD 6 · convert 1 from the 5 (pass) or 2 from the 10 (run or pass) · safety 2. A convert picked off and returned is 2 the other way.</li>
 <li><b>Kickoff out of bounds → receivers' ball at their 15.</b> Kickoffs from the kicker's 15; you can punt on any down.</li>
@@ -887,10 +887,11 @@
 <li><b>Two 20-minute halves,</b> running clock.</li>
 <li><b>Stop time: last minute of the 2nd half only, and only if the differential is 14 or less</b> (and time permits). Then the clock stops on: touchdown · ball out of bounds · time-outs (team or official) · penalties · incomplete pass · injury · until the ref has placed the markers.</li>
 <li>In stop time, an <b>offensive penalty runs 10 seconds off</b>; an offensive penalty in the <b>last 10 seconds ends the game</b>.</li>
-<li>A half doesn't end until the ball is dead and penalties are resolved. <b>TD on the last play → the convert is still played.</b></li>
+<li>A half doesn't end until the ball is dead and penalties are resolved. <b>TD on the last play of either half → the convert is still played</b> at 0:00.</li>
 <li><b>Time-outs:</b> one 30-second time-out per team per half; they don't carry over.</li>
 <li>Officials may shorten or abandon games for scheduling or safety.</li>
 <div class="house"><em>How we call it</em> <b>A time-out always stops the clock</b>, running time or not — that's the only reason anyone calls one.</div>
+<div class="house"><em>How we call it</em> <b>The clock never runs during a convert in stop time.</b> Stop it on the touchdown; start it again on the kickoff.</div>
 <div class="house"><em>How we call it</em> We don't add time back for substitutions, injuries or time-wasting (rulebook 4c allows it "when possible"; in practice, never).</div>
 </ul></div></details>
 
@@ -915,17 +916,14 @@
 <li><b>Illegal forward pass</b> (play dead, 5 yd + loss of down from the spot): passer's entire body past the line · after a change of possession · second forward pass in a down · passer catches own untouched pass · any forward pass on a return play · thrown away behind the line to avoid loss (intentional grounding).</li>
 <li><b>Catch = control with one foot in bounds.</b> No two-feet or survive-the-ground test (not NFL rules). Receiver carried out mid-air by contact = complete, spotted where the ball was.</li>
 <li><b>Down:</b> any part of the body other than the feet touches the ground — <b>a hand counts</b> (not NFL rules).</li>
-<li><b>Inside the 5:</b> no hand-offs, no QB scrambles → "rush penalty", 5 yards.</li>
+<li><b>Inside the 5:</b> no hand-offs, no QB scrambles. <b>Illegal run: 5 yards and loss of down</b> (the book calls it a "rush penalty"; loss of down settled at training).</li>
 </ul></div></details>
 
-<details><summary>Ball carrier &amp; flags</summary><div class="body"><ul>
-<li><b>Flag guarding</b> is strictly prohibited: swinging a hand/arm over the belt, holding the ball over the flag, or dropping a shoulder to cover the flag.</li>
-<li>No <b>hurdling, leaping or spinning</b> away from a defender; no lowering the head or shoulder to get past.</li>
-<li><b>Any ball-carrier infraction: 5 yards and loss of down.</b></li>
+<details><summary>Flags &amp; deflagging</summary><div class="body"><ul>
 <li><b>Deflagging:</b> only a player in possession can be deflagged. The defender should stop and hold the flag up at the spot, and must try to hang on to it.</li>
 <li><b>Flag falls off by accident:</b> play continues; that carrier is down by a <b>one-hand touch</b> between shoulders and knees.</li>
-<li><b>No stripping the ball</b> from the carrier's hands: dead ball, 5 yards on the defense.</li>
-<li>Illegally secured flag belt: 10 yards.</li>
+<li>Shirts tucked under the belt; no clothing that blocks access to the flag. An <b>illegally secured flag belt</b> is 10 yards.</li>
+<li>Ball-carrier fouls (flag guarding, spinning, hurdling, stripping) are listed under <b>Penalties</b>.</li>
 </ul></div></details>
 
 <details><summary>Rushing the passer</summary><div class="body"><ul>
@@ -943,19 +941,24 @@
 <li><b>Overtime:</b> regular season games can end tied. Playoffs: coin toss; each team gets a series from the half line; repeat until one team scores and the other doesn't. An interception flips the series; a pick-six ends it.</li>
 </ul></div></details>
 
-<details><summary>Penalties — 5 yards</summary><div class="body"><ul>
-<li>Delay of game / time count</li><li>Encroachment · False start · Offside</li><li>Illegal snap</li>
-<li><b>Illegal forward pass (loss of down)</b></li><li><b>Intentional grounding (loss of down)</b></li>
-<li>Jumping with the ball · Offensive spinning · Flag guarding (ball-carrier fouls also lose the down)</li>
+<details><summary>Penalties</summary><div class="body">
+<h4>5 yards</h4><ul>
+<li>Delay of game / time count · Illegal snap</li>
+<li>Encroachment · False start · Offside</li>
 <li>Illegal substitution · Illegal rushing</li>
-<li>Kicking the ball forward (from the spot) · Stripping the ball (defense, dead ball) · Rush penalty inside the 5</li>
-</ul></div></details>
-
-<details><summary>Penalties — 10 yards</summary><div class="body"><ul>
+<li>Kicking the ball forward (from the spot)</li>
+<li><b>Stripping the ball</b> from the carrier's hands (defense; dead ball)</li>
+</ul>
+<h4>5 yards + loss of down</h4><ul>
+<li><b>Illegal forward pass</b> (from the spot of the pass) · <b>Intentional grounding</b></li>
+<li><b>Illegal run inside the 5</b> — a hand-off or QB scramble inside the 5 (the book's "rush penalty")</li>
+<li><b>Ball-carrier fouls</b> — <b>flag guarding</b> (hand/arm or ball over the belt, dropping a shoulder to cover the flag) · <b>spinning</b> · <b>hurdling or leaping</b> · lowering the head or shoulder. Any ball-carrier infraction is 5 and loss of down.</li>
+</ul>
+<h4>10 yards</h4><ul>
 <li><b>Offensive pass interference (loss of down)</b></li>
-<li><b>Defensive pass interference — automatic first down at the spot.</b> No PI if the ball is uncatchable, or after any eligible receiver has touched it. Tangled feet alone isn't PI; tripping from behind is; face-guarding is. Incidental contact while both play the ball is not PI.</li>
-<li>Holding (grasping/encircling) · Illegal use of hands · Illegal contact · Blocking · Clipping · Tripping</li>
-<li>Pyramiding (using a teammate to get height on a block)</li>
+<li><b>Defensive pass interference — 10 yards from the previous spot + automatic first down.</b> Not a spot foul. No PI if the ball is uncatchable, or after any eligible receiver has touched it. Tangled feet alone isn't PI; tripping from behind is; face-guarding is. Incidental contact while both play the ball is not PI.</li>
+<div class="house"><em>How we call it</em> <b>Ripping at the ball on a catch:</b> while the receiver is still bobbling it or hasn't secured it, the defender may play the ball — brushing the hands or arm on the way in is fine, as long as they aren't early. <b>Once the receiver has control it's a catch,</b> and any further ripping or excessive contact is <b>unnecessary roughness</b>. Arriving before the ball is PI.</div>
+<li>Holding (grasping/encircling) · Illegal use of hands · Illegal contact · Blocking · Clipping · Tripping · Pyramiding (using a teammate to get height)</li>
 <li><b>Roughing the passer (automatic first down)</b> · Contacting the kicker (not if pushed into them by the kicking team, or slight incidental contact on a block attempt)</li>
 <li>Unsportsmanlike conduct · Obstruction/interference · Personal foul · Unnecessary roughness · Illegal equipment · Illegally secured flag belt</li>
 </ul></div></details>
