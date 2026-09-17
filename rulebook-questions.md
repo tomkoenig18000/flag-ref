@@ -4,10 +4,11 @@ Condensed from the 2025 Rules & Regulations (rev. Jan 5, 2026) while building th
 in-app quick reference. Section numbers refer to the rulebook. "NFL default" is the
 tiebreaker Tom uses when the book is silent.
 
-## Settled at ref training (Sep 15, 2026 — Caden, head ref)
+## Settled at ref training (Sep 15, 2026) and by Caden's email reply (Sep 16, 2026)
 
-Items struck through below were settled there; the calls are in the app. Open items are
-going to Caden by email.
+Items struck through below are settled; the calls are in the app. Caden is the head ref.
+Still open after the email: the punt-halo penalty (6 — skipped in his reply) and DPI near
+the goal line (5 — not asked). Ask in person.
 
 - **Contesting a catch.** Until the receiver has control (still bobbling, not yet secured)
   the defender may rip at the ball, and brushing the hands or arm on the way in is fine as
@@ -19,10 +20,11 @@ going to Caden by email.
 - **Stop a running clock only for a major delay** — a significant injury, ball stuck in a
   bush or on a roof. Nothing else stops running time; we don't add time back afterwards.
 - **Ball-carrier fouls are spot fouls assessed from the end of the run.** A run that crossed
-  the marker is still a first down, then 5 back. *Open — in the email:* is that 1st & 10 from
-  the new spot, or 1st & 15 (marker stays)? Put Caden's answer in the app's yellow note.
-- **Fair play ratings** weren't mentioned at training — the app requires both before a game
-  can be finished. Ask Caden whether IM still wants them and where they go.
+  the marker is still a first down: **1st & 10 from the new spot**, 5 back from the end of
+  the run (Caden by email).
+- **Fair play ratings are happening** (confirmed after the email — Caden hadn't heard of
+  them at training and checked with Keelie). The app requires both before a game can be
+  finished; keep it that way.
 
 ## Rulebook gaps
 
@@ -36,22 +38,21 @@ going to Caden by email.
 3. ~~Time-outs when the clock is running (4b, 10).~~ **Resolved:** a time-out always stops
    the clock, running time or not (house call — it's the only reason anyone calls one).
 
-4. **10-second run-off / last-10-seconds rule (4e.ii).** *Still open — in the email.*
-   Applies to "any offensive penalty" in stop time. Can the defense decline the penalty
-   and keep the run-off, or decline both (NFL: the defense may decline the run-off)?
-   Also: does the run-off apply on a dead-ball foul like delay of game?
+4. ~~**10-second run-off / last-10-seconds rule (4e.ii).**~~ **Resolved: the defence may
+   decline the run-off** and take just the yardage (Caden by email). Not asked: whether it
+   applies to a dead-ball foul like delay of game — treat it as any other offensive penalty.
 
 5. ~~**Defensive PI in the end zone (13e.ii).**~~ **Resolved: no spot fouls for PI any
    more.** DPI is always 10 yards from the previous spot + automatic first down. Near the
    goal line the book's half-the-distance rule (13g) should apply as for any 10-yard
    penalty — Tom's recollection was "10 yards or the distance to the goal, whichever is
-   less", which would put the ball on the goal line; *confirm in the email.*
+   less", which would put the ball on the goal line; *didn't make the email — ask in person.*
 
-6. **Punt halo violation (8b).** *Open — in the email.* A 5-yard halo must be given to the
+6. **Punt halo violation (8b).** *Still open — Caden's reply skipped it.* A 5-yard halo must be given to the
    receiver, but no penalty is listed for breaking it. Working assumption: 10 yards
    (obstruction/interference) from the spot of the catch.
 
-7. **Illegal forward pass spot (7i.viii vs 13d.v).** *Low priority — mention in the email.*
+7. **Illegal forward pass spot (7i.viii vs 13d.v).** *Low priority — not asked.*
    7i says loss of down "from the point of the illegal pass"; 13d says 5 yards + loss of
    down. The app reads it as NFL: 5 yards from the spot of the pass + loss of down.
 
@@ -71,18 +72,17 @@ going to Caden by email.
 12. ~~Kickoff out of bounds (6e/6f).~~ **Resolved:** receivers' ball at their 15, no
     re-kick, no yardage. Very common — it's in the quick reference.
 
-13. **Stripping the ball (9c.b).** *Open — in the email.* Dead ball + 5 yards on the
-    defense. Awkward because the play often keeps going after the strip attempt. Tom's
-    view: 5 yards from the end of the play, replay the down (the carrier could have got a
-    lot further).
+13. ~~**Stripping the ball (9c.b).**~~ **Resolved: add the 5 yards to the end of the run**
+    (Caden by email). If the carrier keeps going after the strip attempt, let the play
+    finish and mark 5 on from there.
 
-14. **Intercepting a lateral (7e, 7k).** *In the email as a confirm.* A lateral caught in the
-    air by the defense never touches the ground, so it isn't a dead-ball fumble: it's a live
-    turnover and can be returned. (Happened last season; we let it stand — no safety risk.)
+14. ~~**Intercepting a lateral (7e, 7k).**~~ **Resolved: allowed, live turnover** (Caden by
+    email). A lateral caught in the air by the defense never touches the ground, so it isn't
+    a dead-ball fumble; it can be returned. (Charlotte did it last season.)
 
 ## Minor / editorial
 
-- 12e cross-references "H12b or H12c" — should be C12b/C12c.
+- 12e cross-references "H12b or H12c" — should be C12b/C12c. (Reported; Caden will look.)
 - 4c "Any other cause at the official's discretion" — several lines with apostrophes are
   in a different font in the PDF and drop out of text extraction; nothing wrong in print.
 - Substitution rule 12c (must join the pre-snap huddle) — we don't police it.
