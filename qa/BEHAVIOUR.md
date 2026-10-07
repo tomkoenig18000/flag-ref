@@ -45,3 +45,10 @@ Home → New game → Setup (names, flag colours, who kicks off 1st half, half l
 ## General
 - No uncaught JS errors at any point (harness collects them in app.errors()).
 - No state where the app is stuck: e.g. a modal that can't be closed (other than the intentional conversion lock), a clock that can't be started when it should, a half that ends but shows the wrong status.
+
+## v22 additions
+- Time-outs: one per team per half. Button under each team's TD opens a sheet; sliding takes it, stops the clock, logs it. Undo returns it. Refreshes at the 2nd half.
+- Conversion sheet shows both scores (TD included) and the live half clock.
+- Stop time: clock block is green while running, red while stopped.
+- Lock screen score (menu toggle, off by default): media-session card with score + half clock; needs a real iPhone to verify.
+- Setup inputs are swapped for fresh copies on Continue/Start so iOS shake-to-undo has no typing to undo.

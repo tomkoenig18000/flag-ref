@@ -80,6 +80,11 @@ the goal line (5 — not asked). Ask in person.
     email). A lateral caught in the air by the defense never touches the ground, so it isn't
     a dead-ball fumble; it can be returned. (Charlotte did it last season.)
 
+15. **Illegal touching — receiver who went out of bounds (not in the book).** *Open, ask Caden.* College:
+    a receiver who leaves the field and returns can't be first to touch a forward pass (unless forced
+    out and straight back in); penalty is loss of down at the previous spot. NFL: same foul, 5 yards from
+    the previous spot. The app says 5 yards + loss of down, like an illegal forward pass, until confirmed.
+
 ## Minor / editorial
 
 - 12e cross-references "H12b or H12c" — should be C12b/C12c. (Reported; Caden will look.)

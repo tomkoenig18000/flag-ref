@@ -176,9 +176,9 @@
     border: 3px solid transparent; transition: border-color .15s ease, background .15s ease;
   }
   .clock[data-state="running"] { border-color: var(--good); box-shadow: none; }
-  .clock[data-state="stoptime"] { border-color: var(--warn); box-shadow: none; }
-  /* stop time: the whole block changes colour — amber = running, red = stopped */
-  .clock[data-state="stoptime"][data-running="true"] { background: var(--warn); border-color: var(--warn); color: #002145; }
+  .clock[data-state="stoptime"] { border-color: var(--good); box-shadow: none; }
+  /* stop time: the whole block changes colour — green = running, red = stopped (amber is not used: too close to red at a glance) */
+  .clock[data-state="stoptime"][data-running="true"] { background: var(--good); border-color: var(--good); color: #002145; }
   .clock[data-state="stoptime"][data-running="false"] { background: var(--danger); border-color: var(--danger); color: #FFFFFF; }
   .clock[data-state="stoptime"][data-running] .digits, .clock[data-state="stoptime"][data-running] .status, .clock[data-state="stoptime"][data-running] .sub { color: inherit; }
   .clock .pre { display: none; margin-top: 6px; padding: 5px 12px; border-radius: 999px; font-family: var(--display); font-weight: 800; font-size: 15px; letter-spacing: .08em; text-transform: uppercase; }
@@ -216,6 +216,13 @@
   .team[data-flag="blue"] .td { background: var(--blue); color: var(--on-blue); }
   .team .td small { display: block; font-size: 15px; letter-spacing: .12em; font-weight: 600; }
 
+  .team .to { margin: 0 10px 10px; min-height: 44px; font-size: 16px; }
+  .team .to small { font-family: var(--body); font-weight: 600; font-size: 13px; letter-spacing: 0; text-transform: none; opacity: .8; }
+  .convbar { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px; text-align: center; background: var(--surface); border-radius: 12px; padding: 8px 10px; }
+  .convbar .cn { font-family: var(--display); font-weight: 600; font-size: 15px; line-height: 1.05; overflow-wrap: anywhere; }
+  .convbar .cs { font-family: var(--display); font-weight: 800; font-size: 40px; line-height: 1; font-variant-numeric: tabular-nums; }
+  .convbar .cc { font-family: var(--display); font-weight: 800; font-size: 28px; line-height: 1; font-variant-numeric: tabular-nums; }
+  .convbar .cc small { display: block; font-size: 13px; letter-spacing: .1em; color: var(--muted); }
   .lastplay { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; background: var(--surface); border-radius: 12px; padding: 10px 12px; min-height: 56px; }
   .lastplay .txt { font-size: 15px; color: var(--muted); font-weight: 600; }
   .lastplay .txt b { color: var(--ink); }
@@ -313,7 +320,7 @@
       <svg viewBox="0 0 44 44" aria-hidden="true"><rect x="2" y="2" width="40" height="40" rx="10" fill="var(--surface2)"/><path d="M13 9v27" stroke="var(--ink)" stroke-width="3" stroke-linecap="round"/><path d="M15 10h16l-4 6 4 6H15z" fill="var(--yellow)"/><path d="M15 23h13l-3 5 3 5H15z" fill="var(--blue)"/></svg>
       <div><h1>Flag Ref</h1><div class="eyebrow">Point Grey Cup · UBC Rec</div></div>
     </div>
-    <button class="link" data-act="diagnostics" style="padding:4px 0">v21</button>
+    <button class="link" data-act="diagnostics" style="padding:4px 0">v22</button>
   </div>
   <button class="sync" id="sync" data-state="saving" data-act="diagnostics">Connecting to your account…</button>
   <div id="resumeWrap"></div>
@@ -413,11 +420,13 @@
       <div class="head" id="bName0"></div>
       <div class="score num" id="bScore0">0</div>
       <button class="btn td" data-act="touchdown" data-team="0">TD<small>+6</small></button>
+      <button class="btn small ghost to" data-act="timeoutAsk" data-team="0" id="toBtn0">Time-out</button>
     </div>
     <div class="team" id="team1" data-flag="blue">
       <div class="head" id="bName1"></div>
       <div class="score num" id="bScore1">0</div>
       <button class="btn td" data-act="touchdown" data-team="1">TD<small>+6</small></button>
+      <button class="btn small ghost to" data-act="timeoutAsk" data-team="1" id="toBtn1">Time-out</button>
     </div>
   </div>
 
@@ -455,7 +464,7 @@
      right away, failures are shown on the board, and a finished game is
      only cleared once the cloud has confirmed it. Clock state is
      timestamps, so a running clock never generates writes by itself. */
-  const VERSION = 21;
+  const VERSION = 22;
   // Inside the Claude viewer the page has window.claude and can use the account store;
   // as a standalone home-screen app (GitHub Pages) phone storage is first-party and durable.
   const IN_VIEWER = !!(window.claude && typeof window.claude.use === 'function');
@@ -561,6 +570,9 @@
   const fairPlayOf = (game) => { if (!game.fairPlay) game.fairPlay = [{ score: null, note: '' }, { score: null, note: '' }]; return game.fairPlay; };
   const fairPlayComplete = (game) => fairPlayOf(game).every((x) => x.score >= 1);
   const other = (i) => 1 - i;
+  // time-outs: one per team per half, tos[team][half-1] = used
+  const toUsed = (game, i, half = game.half) => !!(game.tos && game.tos[i] && game.tos[i][half - 1]);
+  function setToUsed(game, i, half, v) { if (!game.tos) game.tos = [[false, false], [false, false]]; game.tos[i][half - 1] = v; }
   const remainingMs = (game) => game.clock.since ? Math.max(0, game.clock.remaining - (Date.now() - game.clock.since)) : game.clock.remaining;
   const running = (game) => !!game.clock.since;
   function startClock(game) { if (!running(game) && remainingMs(game) > 0) { game.clock.since = Date.now(); } }
@@ -596,7 +608,7 @@
   }
 
   function addLog(game, entry) { game.log.push({ t: Date.now(), stamp: stampOf(game), ...entry }); }
-  const LABEL = { td: 'Touchdown', conv2: '2-pt conversion', conv1: '1-pt conversion', conv0: 'Conversion no good', adjust: 'Score adjusted' };
+  const LABEL = { td: 'Touchdown', conv2: '2-pt conversion', conv1: '1-pt conversion', conv0: 'Conversion no good', adjust: 'Score adjusted', timeout: 'Time-out' };
   function logLine(game, e) {
     const n = game.teams[e.team].name;
     const pts = e.pts > 0 ? '+' + e.pts : e.pts < 0 ? String(e.pts) : '—';
@@ -611,6 +623,7 @@
     screens.forEach((s) => { $(s).hidden = s !== id; });
     window.scrollTo(0, 0); document.body.scrollTop = 0;
     if (id === 'board') requestWake(); else releaseWake();
+    setTimeout(() => lockScreenSync(true), 0);
     if (id === 'home') setTimeout(applyUpdate, 0);   // a downloaded update lands the next time we reach the home screen
   }
 
@@ -686,6 +699,11 @@
     const last = game.log[game.log.length - 1];
     $('lastplay').innerHTML = last ? `<b>${esc(t[last.team].name)}</b> · ${LABEL[last.type]} <span class="num">${last.pts > 0 ? '+' + last.pts : last.pts < 0 ? last.pts : ''}</span> <span class="muted num">${last.stamp}</span>` : 'No scoring yet';
     $('undoBtn').disabled = !last;
+    [0, 1].forEach((i) => {
+      const b = $('toBtn' + i); const used = toUsed(game, i); const live = game.status === 'live';
+      b.innerHTML = 'Time-out <small>' + (used ? 'used this half' : '1 left') + '</small>';
+      b.disabled = used || !live;
+    });
     renderClock();
   }
 
@@ -701,7 +719,7 @@
     const within14 = Math.abs(game.teams[0].score - game.teams[1].score) <= 14;
     if (game.status === 'halftime') { status = 'Halftime'; sub = game.teams[other(game.kickoff)].name + ' kicks off · tap for the 2nd-half slide'; }
     else if (game.status === 'over') { status = 'Final'; sub = 'Open the menu to finish and save'; }
-    else if (isStopTime(game)) { state = 'stoptime'; status = run ? 'Stop time · running' : 'Stop time · stopped'; sub = 'Within 14 — stop on incompletions, out of bounds, first downs, scores.'; }
+    else if (isStopTime(game)) { state = 'stoptime'; status = run ? 'Stop time · running' : 'Stop time · stopped'; sub = run ? 'Within 14 — runs until the first stoppage, then stops on incompletions, out of bounds, first downs, scores.' : 'Within 14 — stopped. Start it again when play resumes.'; }
     else if (ms <= 60000 && game.half === 2) { status = run ? 'Running' : 'Stopped'; pre = 'Clock runs — up by more than 14'; preKind = 'run'; }
     else {
       status = run ? 'Running' : (ms === game.halfMin * 60000 ? 'Tap to start' : 'Stopped');
@@ -715,6 +733,7 @@
     const needSlide = game.status === 'live' && run && state !== 'stoptime';
     if ($('stopSlide').hidden !== !needSlide) { $('stopSlide').hidden = !needSlide; resetSlide($('stopSlide')); if (needSlide) fitSlideLabels(); }
     if (needSlide && !sub) $('clockSub').textContent = 'Slide below to stop';
+    const cb = $('convBar'); if (cb) cb.outerHTML = convBarHtml(game);
   }
 
   /* ---------- modal ---------- */
@@ -728,10 +747,17 @@
   }
   function closeModal() { modalLock = false; $('modal').classList.remove('open'); $('sheet').innerHTML = ''; }
 
+  function convBarHtml(game) {
+    const t = game.teams;
+    return `<div class="convbar" id="convBar"><div><div class="cn">${esc(t[0].name)}</div><div class="cs">${t[0].score}</div></div>
+      <div class="cc">${fmt(remainingMs(game))}<small>${game.half === 1 ? '1ST' : '2ND'}${running(game) ? ' · RUNNING' : ''}</small></div>
+      <div><div class="cn">${esc(t[1].name)}</div><div class="cs">${t[1].score}</div></div></div>`;
+  }
   function conversionModal() {
     const game = g(); const p = game.pending; if (!p) return;
     const t = game.teams[p.team];
     openModal(`<div class="banner ${t.flag}"><div class="eyebrow">Touchdown · +6</div><h2>${esc(t.name)}</h2></div>
+      ${convBarHtml(game)}
       <div class="eyebrow">Conversion result?</div>
       <div class="stack conv">
         <div class="slide primary" data-slide="conv" data-pts="2"><div class="slide-label">2 points <small>from the 10</small></div><div class="slide-hint">›››</div><div class="slide-knob"></div></div>
@@ -803,6 +829,7 @@
         ${game.status === 'halftime' ? '<button class="btn" data-act="halftimeModal">Start 2nd half</button>' : ''}
         ${game.status === 'over' ? '<button class="btn primary" data-act="finalModal">Finish &amp; save</button>' : ''}
         <button class="btn" data-act="share">Share score</button>
+        <button class="btn" data-act="lockScreen">Lock screen score: ${S.settings.lockScreen ? 'on' : 'off'}</button>
         <button class="btn" data-act="diagnostics">Diagnostics &amp; backup</button>
         <button class="btn ghost" data-act="goHome">Back to home (keeps game)</button>
         <button class="btn ghost" style="color:var(--danger);border-color:var(--danger)" data-act="abandon">Abandon game</button>
@@ -864,6 +891,7 @@
 <details><summary>New teams: flag vs. tackle</summary><div class="body">
 <p style="margin:0 0 6px">The 60-second version to give teams in week 1. Everything else works like the football they know.</p><ul>
 <li><b>A pulled flag is the tackle.</b> Defender holds the flag up at the spot. Only the ball carrier can be deflagged. If a flag falls off on its own, it's a one-hand touch instead.</li>
+<li><b>Flags always on the outside of clothing</b> — nothing covering the belt or flags.</li>
 <li><b>No flag guarding</b> — no arm, hand or ball over the belt, no dropping a shoulder. <b>No spinning, hurdling or leaping</b> to avoid a defender, no lowering the head. All of these: 5 yards and loss of down.</li>
 <li><b>No contact.</b> No blocking, no holding, no stripping the ball. Rushers get a clear straight lane to the QB.</li>
 <li><b>Fumbles are dead where they hit the ground</b> — nobody dives on anything. The offense keeps it. Exception: a <b>muffed kickoff or punt can be picked up and returned</b> unless the ref kills it for collision risk. A lateral caught in the air by the defense is live.</li>
@@ -888,9 +916,10 @@
 <details><summary>Timing &amp; stop time</summary><div class="body"><ul>
 <li><b>Two 20-minute halves,</b> running clock. <b>Halves can be shortened to finish inside the hour</b> — finishing on time is a big focus this year. Set the half length on the setup screen before kickoff.</li>
 <li><b>Stop time: last minute of the 2nd half only, and only if the differential is 14 or less</b> (and time permits). Then the clock stops on: touchdown · ball out of bounds · time-outs (team or official) · penalties · incomplete pass · injury · until the ref has placed the markers.</li>
+<li><b>The clock doesn't stop at 1:00 by itself.</b> It keeps running until the <b>first stoppage</b> (incompletion, out of bounds, score, penalty, time-out…) at or after 1:00, and only then does stop time apply — so it can run a while before the first stop.</li>
 <li>In stop time, an <b>offensive penalty runs 10 seconds off</b>; an offensive penalty in the <b>last 10 seconds ends the game</b>. <b>The defence may decline the run-off</b> and take just the yardage.</li>
 <li>A half doesn't end until the ball is dead and penalties are resolved. <b>TD on the last play of either half → the convert is still played</b> at 0:00.</li>
-<li><b>Time-outs:</b> one 30-second time-out per team per half; they don't carry over.</li>
+<li><b>Time-outs:</b> one 30-second time-out per team per half; they don't carry over. The app has a Time-out button under each team's score — it stops the clock.</li>
 <li>Officials may shorten or abandon games for scheduling or safety.</li>
 <div class="house"><em>How we call it</em> <b>Stop a running clock only for a major delay</b> — a significant injury, the ball stuck in a bush or on a roof. Substitutions, ordinary time-wasting and quick injuries don't stop it.</div>
 <div class="house"><em>How we call it</em> <b>A time-out always stops the clock</b>, running time or not — that's the only reason anyone calls one.</div>
@@ -919,13 +948,15 @@
 <li><b>Illegal forward pass</b> (play dead, 5 yd + loss of down from the spot): passer's entire body past the line · after a change of possession · second forward pass in a down · passer catches own untouched pass · any forward pass on a return play · thrown away behind the line to avoid loss (intentional grounding).</li>
 <li><b>Catch = control with one foot in bounds.</b> No two-feet or survive-the-ground test (not NFL rules). Receiver carried out mid-air by contact = complete, spotted where the ball was.</li>
 <li><b>Down:</b> any part of the body other than the feet touches the ground — <b>a hand counts</b> (not NFL rules).</li>
+<li><b>Out of bounds, then back in:</b> a receiver who steps out of bounds and comes back in <b>can't be the first to touch a forward pass</b> — a teammate or a defender has to touch it first. Doesn't apply if a defender <b>forced</b> them out and they come straight back in. Same idea in college and the NFL; no penalty if a defender touches it first.
+<div class="house"><em>How we call it</em> <b>Illegal touching:</b> college is loss of down at the previous spot; the NFL is 5 yards from the previous spot. <b>Until Caden confirms, call it 5 yards + loss of down</b>, like an illegal forward pass.</div></li>
 <li><b>Inside the 5:</b> no hand-offs, no QB scrambles. <b>Illegal run: 5 yards and loss of down</b> (the book calls it a "rush penalty"; loss of down settled at training).</li>
 </ul></div></details>
 
 <details><summary>Flags &amp; deflagging</summary><div class="body"><ul>
 <li><b>Deflagging:</b> only a player in possession can be deflagged. The defender should stop and hold the flag up at the spot, and must try to hang on to it.</li>
 <li><b>Flag falls off by accident:</b> play continues; that carrier is down by a <b>one-hand touch</b> between shoulders and knees.</li>
-<li>Shirts tucked under the belt; no clothing that blocks access to the flag. An <b>illegally secured flag belt</b> is 10 yards.</li>
+<li><b>Flags must always be on the outside of clothing.</b> Shirts tucked under the belt; nothing that blocks access to the flag. An <b>illegally secured flag belt</b> is 10 yards.</li>
 <li>Ball-carrier fouls (flag guarding, spinning, hurdling, stripping) are listed under <b>Penalties</b>.</li>
 </ul></div></details>
 
@@ -1063,6 +1094,42 @@
   let toastTimer;
   function toast(msg) { const t = $('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 1800); }
 
+  /* ---------- lock screen score ----------
+     A web page can't make a Live Activity, but a page that is "playing" audio gets a Now Playing card on the lock
+     screen. We loop a silent clip and put the score in the title and the half clock on the progress bar, which the phone
+     counts down by itself. Display only: every button on the card is a no-op. Off by default (it takes over the
+     phone's media controls), switched on from the game menu. */
+  let lockAudio = null, lockKey = '';
+  function silentWav() {
+    const n = 8000, b = new Uint8Array(44 + n), v = new DataView(b.buffer);
+    const w = (o, t) => { for (let i = 0; i < t.length; i++) b[o + i] = t.charCodeAt(i); };
+    w(0, 'RIFF'); v.setUint32(4, 36 + n, true); w(8, 'WAVEfmt '); v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+    v.setUint32(24, 8000, true); v.setUint32(28, 8000, true); v.setUint16(32, 1, true); v.setUint16(34, 8, true); w(36, 'data'); v.setUint32(40, n, true);
+    b.fill(128, 44);
+    let bin = ''; b.forEach((x) => { bin += String.fromCharCode(x); });
+    return 'data:audio/wav;base64,' + btoa(bin);
+  }
+  function lockScreenSync(force) {
+    try {
+      const game = g();
+      const on = !!(S.settings.lockScreen && game && current === 'board' && 'mediaSession' in navigator && typeof MediaMetadata !== 'undefined');
+      if (!on) { if (lockAudio) lockAudio.pause(); return; }
+      if (!lockAudio) { lockAudio = new Audio(silentWav()); lockAudio.loop = true; lockAudio.volume = 0.01; }
+      if (lockAudio.paused) { const pr = lockAudio.play(); if (pr && pr.catch) pr.catch(() => {}); }
+      const t = game.teams; const run = running(game);
+      const ms = remainingMs(game);
+      const half = game.status === 'halftime' ? 'Halftime' : game.status === 'over' ? 'Final' : (game.half === 1 ? '1st' : '2nd');
+      const key = [t[0].score, t[1].score, half, run, run ? '' : ms, game.halfMin].join('|');
+      if (!force && key === lockKey) return; lockKey = key;
+      const title = `${t[0].name} ${t[0].score} – ${t[1].score} ${t[1].name}`;
+      navigator.mediaSession.metadata = new MediaMetadata({ title, artist: half + (running(game) ? '' : ' · clock stopped'), album: 'Flag Ref' });
+      ['play', 'pause', 'stop', 'previoustrack', 'nexttrack', 'seekbackward', 'seekforward', 'seekto'].forEach((a) => { try { navigator.mediaSession.setActionHandler(a, () => {}); } catch (e) {} });
+      const dur = game.halfMin * 60;
+      navigator.mediaSession.setPositionState({ duration: dur, position: Math.min(dur, Math.max(0, dur - ms / 1000)), playbackRate: run ? 1 : 0.0001 });
+      navigator.mediaSession.playbackState = 'playing';
+    } catch (e) {}
+  }
+
   /* ---------- clock tick ---------- */
   let lastTick = Date.now(), stopKey = '', stopActive = null;
   function tick() {
@@ -1088,7 +1155,7 @@
         else { beep(WARN); showAlert('off', 'Score change', 'Stop time off', 'Up by more than 14 — the clock runs.', 5000); }
       }
     }
-    renderClock();
+    renderClock(); lockScreenSync();
   }
   let alertTimer;
   function showAlert(kind, eyebrow, title, body, ms) {
@@ -1141,9 +1208,9 @@
       if (!(game.halfMin >= 1 && game.halfMin <= 60)) { err.textContent = 'Half length must be 1–60 minutes.'; return; }
       t[0].name = t[0].name.trim(); t[1].name = t[1].name.trim();
       game.clock.remaining = game.halfMin * 60000; game.status = 'ready'; S.settings.halfMin = game.halfMin;
-      save(); renderReady(); show('ready');
+      save(); clearTypingHistory(); renderReady(); show('ready');
     },
-    startGame() { unlockAudio(); const game = g(); game.status = 'live'; game.startedAt = Date.now(); startClock(game); save(); renderBoard(); show('board'); },
+    startGame() { clearTypingHistory(); unlockAudio(); const game = g(); game.status = 'live'; game.startedAt = Date.now(); startClock(game); save(); renderBoard(); show('board'); },
 
     toggleClock(d, force) {
       unlockAudio(); const game = g();
@@ -1162,6 +1229,20 @@
     endHalf() { closeModal(); const game = g(); confirmModal(game.half === 1 ? 'End the 1st half now?' : 'End the game now?', 'The clock will be set to 0:00.', game.half === 1 ? 'End half' : 'End game', 'endHalfConfirm'); },
     endHalfConfirm() { closeModal(); expireHalf(g()); },
 
+    timeoutAsk(d) {
+      const game = g(); const i = Number(d.team); if (game.status !== 'live' || toUsed(game, i)) return;
+      const t = game.teams[i];
+      openModal(`<div class="banner ${t.flag}"><div class="eyebrow">${game.half === 1 ? '1st' : '2nd'} half · 30 seconds</div><h2>${esc(t.name)} time-out</h2></div>
+        <div class="muted">Stops the clock. One per team per half. Tap the clock when play restarts.</div>
+        ${slideHtml('timeoutTake', 'Slide to take time-out')}
+        <button class="link" data-act="close">Cancel</button>`);
+      $('sheet').dataset.team = String(i);
+    },
+    timeoutTake() {
+      const game = g(); const i = Number($('sheet').dataset.team); if (!game || game.status !== 'live' || toUsed(game, i)) { closeModal(); return; }
+      stopClock(game); setToUsed(game, i, game.half, true); addLog(game, { team: i, type: 'timeout', pts: 0, half: game.half });
+      save(); closeModal(); renderBoard(); toast('Time-out: ' + game.teams[i].name + ' — clock stopped');
+    },
     touchdown(d) {
       unlockAudio(); const game = g(); if (game.pending) { conversionModal(); return; }
       const i = Number(d.team);
@@ -1188,6 +1269,7 @@
       closeModal();
       const game = g(); const last = game.log.pop(); if (!last) return;
       game.teams[last.team].score -= last.pts;
+      if (last.type === 'timeout') setToUsed(game, last.team, last.half || game.half, false);
       if (last.type === 'td') game.pending = null;
       else if (last.type.startsWith('conv')) { game.pending = { team: last.team }; }
       save(); renderBoard(); toast('Undid: ' + game.teams[last.team].name + ' ' + LABEL[last.type]);
@@ -1253,6 +1335,10 @@
       }
       closeModal(); renderHome(); show('home'); setSync(DB ? 'synced' : 'local'); toast('Game saved');
     },
+    lockScreen() {
+      unlockAudio(); S.settings.lockScreen = !S.settings.lockScreen; save(); lockScreenSync(true); menuModal();
+      toast(S.settings.lockScreen ? ('mediaSession' in navigator ? 'Score will show on the lock screen' : 'Not supported on this device') : 'Lock screen score off');
+    },
     diagnostics() { diagModal(); },
     rules() { rulesModal(); },
     retrySync() { failStreak = 0; dirty = dirty || !!S.current; closeModal(); if (DB) flush(); else toast(IN_VIEWER ? 'No cloud connection in this view' : 'This app saves on the phone — no cloud to retry'); },
@@ -1304,7 +1390,15 @@
     const el = e.target; if (!el || !el.id || !el.id.startsWith('fpNote')) return;
     const game = g(); if (!game) return; fairPlayOf(game)[Number(el.dataset.to)].note = el.value.slice(0, 200); save();
   });
-  ['name0', 'name1', 'halfMin'].forEach((id) => $(id).addEventListener('input', () => { readSetup(); save(); $('kick0').textContent = g().teams[0].name || 'Team 1'; $('kick1').textContent = g().teams[1].name || 'Team 2'; }));
+  document.addEventListener('input', (e) => {
+    if (!e.target || !['name0', 'name1', 'halfMin'].includes(e.target.id)) return;
+    readSetup(); save(); $('kick0').textContent = g().teams[0].name || 'Team 1'; $('kick1').textContent = g().teams[1].name || 'Team 2';
+  });
+  // iOS "Shake to Undo → Undo Typing" only appears while a text field still has typing history. Swapping the
+  // setup inputs for fresh copies when the game starts wipes that history, so shaking the phone mid-game does nothing.
+  function clearTypingHistory() {
+    ['name0', 'name1', 'halfMin'].forEach((id) => { const el = $(id); if (!el || !el.parentNode) return; const v = el.value; const c = el.cloneNode(true); c.value = v; el.parentNode.replaceChild(c, el); });
+  }
 
   /* ---------- portrait lock ---------- */
   const isPhone = () => Math.min(screen.width, screen.height) < 600 && window.matchMedia('(pointer: coarse)').matches;

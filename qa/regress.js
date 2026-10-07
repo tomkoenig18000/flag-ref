@@ -114,3 +114,23 @@ console.log(out.join('\n'));
   k.slide('[data-slide="finish"]'); P(k.screen() === 'home' && k.state().games[0].fairPlay[0].score === null, 'confirm slide finishes with empty ratings');
   P(h.errors().length + h2.errors().length + k.errors().length === 0, 'no errors v15');
 }
+// v22: time-outs, conversion score bar, stop-time colours, typing history
+{
+  const P = (c, m) => console.log((c ? 'PASS ' : 'FAIL ') + m);
+  let t = quickGame(boot(), { halfMin: 2 });
+  P(t.document.getElementById('name0') && t.document.getElementById('name0').value === 'Tigers', 'setup input survives the fresh-copy swap');
+  t.click('[data-act="timeoutAsk"][data-team="0"]');
+  P(/time-out/i.test(t.modal() || '') && t.state().current.clock.since !== null, 'time-out tap only opens a sheet');
+  t.slide('[data-slide="timeoutTake"]');
+  P(t.state().current.clock.since === null && t.state().current.tos[0][0] === true && t.state().current.log[0].type === 'timeout', 'time-out slide stops the clock and is logged');
+  P(t.document.getElementById('toBtn0').disabled && !t.document.getElementById('toBtn1').disabled, 'used time-out disabled, other team still has one');
+  t.click('[data-act="undo"]'); t.slide('[data-slide="undoConfirm"]');
+  P(t.state().current.tos[0][0] === false && !t.document.getElementById('toBtn0').disabled, 'undo gives the time-out back');
+  t.click('[data-act="timeoutAsk"][data-team="0"]'); t.slide('[data-slide="timeoutTake"]');
+  t.click('#clock'); t.advance(2 * 60000 + 300); t.slide('[data-slide="startHalf2"]');
+  P(!t.document.getElementById('toBtn0').disabled, 'time-outs refresh for the 2nd half');
+  t.click('[data-act="touchdown"][data-team="1"]');
+  P(!!t.document.getElementById('convBar') && /6/.test(t.document.getElementById('convBar').textContent), 'conversion sheet shows score and clock');
+  t.slide('[data-slide="conv"][data-pts="1"]');
+  P(t.errors().length === 0, 'no errors v22');
+}
