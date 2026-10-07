@@ -26,6 +26,10 @@ the goal line (5 — not asked). Ask in person.
   them at training and checked with Keelie). The app requires both before a game can be
   finished; keep it that way.
 
+- **Spinning applies to the QB in the pocket too — no exemption** (Caden, after a contested flag).
+  Pivoting on a planted foot / a 360 on the spot is a spin; running in a circle is not. The only
+  exception is when nobody is trying to deflag the carrier. Reason: hand/wrist caught in the belt.
+
 ## Rulebook gaps
 
 1. ~~**Illegal run / hand-off inside the 5 (7o).**~~ **Resolved: 5 yards + loss of down.**
