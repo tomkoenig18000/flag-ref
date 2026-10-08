@@ -150,3 +150,11 @@ console.log(out.join('\n'));
   P(!v.document.querySelector('#sheet .sheet-x'), 'locked conversion sheet has no ✕');
   P(v.errors().length === 0, 'no errors v24');
 }
+// v25: kickoff buttons follow flag colours
+{
+  const k = boot(); k.click('[data-act="newGame"]'); k.click('#kick0');
+  const c = () => [k.document.getElementById('kick0').className, k.document.getElementById('kick1').className].join(',');
+  console.log((c() === 'yellow,blue' ? 'PASS ' : 'FAIL ') + 'kickoff buttons coloured by flag — ' + c());
+  k.click('[data-act="setFlag"][data-team="0"][data-flag="blue"]');
+  console.log((c() === 'blue,yellow' && k.errors().length === 0 ? 'PASS ' : 'FAIL ') + 'kickoff colours follow a flag swap — ' + c());
+}

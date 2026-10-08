@@ -166,7 +166,10 @@
   .seg button[aria-pressed="true"] { color: var(--ink); background: var(--surface2); }
   .seg button.yellow[aria-pressed="true"] { background: var(--yellow); color: var(--on-yellow); }
   .seg button.blue[aria-pressed="true"] { background: var(--blue); color: var(--on-blue); }
-  .seg.kick button[aria-pressed="true"] { background: var(--chalk-bg); color: var(--chalk-ink); }
+  /* kickoff picker: each button wears its team's flag colour — a stripe when unselected, solid when picked */
+  .seg.kick button.yellow { box-shadow: inset 0 -4px 0 var(--yellow); }
+  .seg.kick button.blue { box-shadow: inset 0 -4px 0 var(--blue); }
+  .seg.kick button[aria-pressed="true"] { box-shadow: none; }
   .hint { font-size: 14px; color: var(--muted); }
   .err { color: var(--danger); font-weight: 600; font-size: 15px; min-height: 1.4em; }
 
@@ -350,7 +353,7 @@
       <svg viewBox="0 0 44 44" aria-hidden="true"><rect x="2" y="2" width="40" height="40" rx="10" fill="var(--surface2)"/><path d="M13 9v27" stroke="var(--ink)" stroke-width="3" stroke-linecap="round"/><path d="M15 10h16l-4 6 4 6H15z" fill="var(--yellow)"/><path d="M15 23h13l-3 5 3 5H15z" fill="var(--blue)"/></svg>
       <div><h1>Flag Ref</h1><div class="eyebrow">Point Grey Cup · UBC Rec</div></div>
     </div>
-    <button class="link" data-act="diagnostics" style="padding:4px 0">v24</button>
+    <button class="link" data-act="diagnostics" style="padding:4px 0">v25</button>
   </div>
   <button class="sync" id="sync" data-state="saving" data-act="diagnostics">Connecting to your account…</button>
   <div id="resumeWrap"></div>
@@ -494,7 +497,7 @@
      right away, failures are shown on the board, and a finished game is
      only cleared once the cloud has confirmed it. Clock state is
      timestamps, so a running clock never generates writes by itself. */
-  const VERSION = 24;
+  const VERSION = 25;
   // Inside the Claude viewer the page has window.claude and can use the account store;
   // as a standalone home-screen app (GitHub Pages) phone storage is first-party and durable.
   const IN_VIEWER = !!(window.claude && typeof window.claude.use === 'function');
@@ -699,6 +702,7 @@
       $('ts' + i).dataset.flag = game.teams[i].flag;
       $('ts' + i).querySelectorAll('[data-act="setFlag"]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.flag === game.teams[i].flag)));
       $('kick' + i).textContent = game.teams[i].name || ('Team ' + (Number(i) + 1));
+      $('kick' + i).className = game.teams[i].flag;
       $('kick' + i).setAttribute('aria-pressed', String(game.kickoff === Number(i)));
     });
     $('halfMin').value = game.halfMin;
