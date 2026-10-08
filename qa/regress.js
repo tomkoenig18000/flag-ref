@@ -134,3 +134,19 @@ console.log(out.join('\n'));
   t.slide('[data-slide="conv"][data-pts="1"]');
   P(t.errors().length === 0, 'no errors v22');
 }
+// v24: every dismissable sheet has a pinned ✕; locked conversion sheet does not
+{
+  const P = (c, m) => console.log((c ? 'PASS ' : 'FAIL ') + m);
+  let v = quickGame(boot(), { halfMin: 1 }); v.advance(61000); v.slide('[data-slide="startHalf2"]'); v.advance(61000);
+  v.click('[data-act="fpScore"][data-to="0"][data-score="4"]'); v.click('[data-act="fpScore"][data-to="1"][data-score="5"]'); v.slide('[data-slide="finish"]');
+  const id = v.state().games[0].id;
+  v.click('[data-act="newGame"]'); v.type('name0', 'Live'); v.type('name1', 'Two'); v.click('#kick0'); v.click('[data-act="toReady"]'); v.click('[data-act="startGame"]');
+  v.click('[data-act="menu"]'); v.click('[data-act="goHome"]');
+  v.click(`[data-act="viewGame"][data-id="${id}"]`);
+  const x = v.document.querySelector('#sheet > .sheet-x');
+  P(!!x, 'past-game viewer has a pinned close button');
+  x.click(); P(v.modal() === null && v.screen() === 'home', '✕ closes the viewer');
+  v.click('[data-act="resume"]'); v.click('[data-act="touchdown"][data-team="0"]');
+  P(!v.document.querySelector('#sheet .sheet-x'), 'locked conversion sheet has no ✕');
+  P(v.errors().length === 0, 'no errors v24');
+}

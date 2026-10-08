@@ -268,6 +268,8 @@
     padding: 18px 16px calc(18px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; gap: 12px;
     max-height: 92vh; max-height: 92dvh; overflow-y: auto;
   }
+  /* a close button pinned to the top of any sheet that can be dismissed, so a tall sheet never hides its only way out */
+  .sheet-x { position: sticky; top: 0; align-self: flex-end; flex: none; width: 44px; height: 44px; margin: -6px -6px -38px 0; border-radius: 50%; background: var(--surface2); color: var(--ink); font-size: 20px; font-weight: 700; display: grid; place-items: center; z-index: 3; box-shadow: 0 2px 8px rgba(0,0,0,.3); }
   .sheet.full { top: 0; border-radius: 0; max-height: none; padding-top: calc(18px + env(safe-area-inset-top)); }
   .sheet .banner { margin: -18px -16px 4px; padding: calc(18px + env(safe-area-inset-top)) 16px 16px; }
   .sheet.full .banner { margin-top: calc(-18px - env(safe-area-inset-top)); }
@@ -320,7 +322,7 @@
       <svg viewBox="0 0 44 44" aria-hidden="true"><rect x="2" y="2" width="40" height="40" rx="10" fill="var(--surface2)"/><path d="M13 9v27" stroke="var(--ink)" stroke-width="3" stroke-linecap="round"/><path d="M15 10h16l-4 6 4 6H15z" fill="var(--yellow)"/><path d="M15 23h13l-3 5 3 5H15z" fill="var(--blue)"/></svg>
       <div><h1>Flag Ref</h1><div class="eyebrow">Point Grey Cup · UBC Rec</div></div>
     </div>
-    <button class="link" data-act="diagnostics" style="padding:4px 0">v23</button>
+    <button class="link" data-act="diagnostics" style="padding:4px 0">v24</button>
   </div>
   <button class="sync" id="sync" data-state="saving" data-act="diagnostics">Connecting to your account…</button>
   <div id="resumeWrap"></div>
@@ -464,7 +466,7 @@
      right away, failures are shown on the board, and a finished game is
      only cleared once the cloud has confirmed it. Clock state is
      timestamps, so a running clock never generates writes by itself. */
-  const VERSION = 23;
+  const VERSION = 24;
   // Inside the Claude viewer the page has window.claude and can use the account store;
   // as a standalone home-screen app (GitHub Pages) phone storage is first-party and durable.
   const IN_VIEWER = !!(window.claude && typeof window.claude.use === 'function');
@@ -741,7 +743,7 @@
     modalLock = !!opts.lock;
     const sheet = $('sheet');
     sheet.className = 'sheet' + (opts.full ? ' full' : '');
-    sheet.innerHTML = html; sheet.scrollTop = 0; document.body.scrollTop = 0;
+    sheet.innerHTML = (opts.lock ? '' : '<button class="sheet-x" data-act="close" aria-label="Close">✕</button>') + html; sheet.scrollTop = 0; document.body.scrollTop = 0;
     $('modal').classList.add('open');
     if (sheet.querySelector('.slide')) fitSlideLabels();
   }

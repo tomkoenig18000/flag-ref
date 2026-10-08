@@ -1,5 +1,5 @@
-// Flag Ref service worker — v23
-const CACHE = 'flagref-v23';
+// Flag Ref service worker — v24
+const CACHE = 'flagref-v24';
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/apple-touch-icon.png'];
 self.addEventListener('install', (e) => {
   // cache: 'reload' bypasses the HTTP cache (Pages serves max-age=600) so the new worker never pre-caches a stale shell
