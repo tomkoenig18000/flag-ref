@@ -86,7 +86,7 @@ the goal line (5 — not asked). Ask in person.
 
 15. ~~**Illegal touching — player who went out of bounds (not in the book).**~~ **Resolved: 5 yards from
     the previous spot, no loss of down** — the NFL rule (Caden by email; Tom checked the NFL book). Applies
-    to kicks and, we read it, forward passes. Not the college loss of down.
+    to kicks and, we read it, forward passes (on a normal pass play the pass is also ruled incomplete). Not the college loss of down.
 
 ## Minor / editorial
 
