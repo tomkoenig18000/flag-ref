@@ -84,9 +84,9 @@ the goal line (5 — not asked). Ask in person.
     email). A lateral caught in the air by the defense never touches the ground, so it isn't
     a dead-ball fumble; it can be returned. (Charlotte did it last season.)
 
-15. **Illegal touching — player who went out of bounds (not in the book).** *Kicks settled, passes open.*
-    Caden: on kickoffs/punts it's **5 yards only** (no loss of down), same as the NFL. Forward passes: not
-    asked. College is loss of down at the previous spot; the app says 5 yards + loss of down until confirmed.
+15. ~~**Illegal touching — player who went out of bounds (not in the book).**~~ **Resolved: 5 yards from
+    the previous spot, no loss of down** — the NFL rule (Caden by email; Tom checked the NFL book). Applies
+    to kicks and, we read it, forward passes. Not the college loss of down.
 
 ## Minor / editorial
 
