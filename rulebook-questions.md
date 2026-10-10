@@ -88,6 +88,10 @@ the goal line (5 — not asked). Ask in person.
     NFL, Tom checked):** on a normal play it's **loss of down, zero yards**; on a kick or punt it's **5 yards
     from the spot of the foul**.
 
+16. ~~**Ball-carrier foul on a turnover return during a conversion.**~~ **Resolved (Caden):** if the
+    defense picks up a ball-carrier penalty (e.g. a spin on a return attempting to score 2), the play is
+    simply dead. No yardage is assessed on the kickoff or otherwise.
+
 ## Minor / editorial
 
 - 12e cross-references "H12b or H12c" — should be C12b/C12c. (Reported; Caden will look.)
