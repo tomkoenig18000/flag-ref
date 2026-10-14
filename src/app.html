@@ -186,6 +186,7 @@
   .clock[data-state="stoptime"][data-running] .digits, .clock[data-state="stoptime"][data-running] .status, .clock[data-state="stoptime"][data-running] .sub { color: inherit; }
   .clock .pre { display: none; margin-top: 6px; padding: 5px 12px; border-radius: 999px; font-family: var(--display); font-weight: 800; font-size: 15px; letter-spacing: .08em; text-transform: uppercase; }
   .clock .pre[data-kind="stop"] { display: inline-block; background: var(--warn); color: #002145; }
+  .clock .pre[data-kind="kick"] { display: inline-block; background: var(--accent); color: #002145; }
   .clock .pre[data-kind="run"] { display: inline-block; background: var(--surface2); color: var(--muted); }
   .strip { width: 100%; background: var(--danger); color: #FFFFFF; font-weight: 700; font-size: 15px; padding: 10px 12px; border-radius: 10px; text-align: left; }
   .strip[data-state="local"] { background: var(--warn); color: #002145; }
@@ -325,7 +326,7 @@
       <svg viewBox="0 0 44 44" aria-hidden="true"><rect x="2" y="2" width="40" height="40" rx="10" fill="var(--surface2)"/><path d="M13 9v27" stroke="var(--ink)" stroke-width="3" stroke-linecap="round"/><path d="M15 10h16l-4 6 4 6H15z" fill="var(--yellow)"/><path d="M15 23h13l-3 5 3 5H15z" fill="var(--blue)"/></svg>
       <div><h1>Flag Ref</h1><div class="eyebrow">Point Grey Cup · UBC Rec</div></div>
     </div>
-    <button class="link" data-act="diagnostics" style="padding:4px 0">v33</button>
+    <button class="link" data-act="diagnostics" style="padding:4px 0">v34</button>
   </div>
   <button class="sync" id="sync" data-state="saving" data-act="diagnostics">Connecting to your account…</button>
   <div id="resumeWrap"></div>
@@ -384,6 +385,7 @@
     <div class="hint">Scrimmage = a practice game when a team forfeits. It's saved and shared marked as a scrimmage.</div>
   </div>
 
+  <div class="hint" style="text-align:center">🚩 Before kickoff: check every player's flag belt is worn over their outer clothing, so the flags are fully accessible.</div>
   <div class="spacer"></div>
   <div class="err" id="setupErr"></div>
   <button class="btn primary huge" data-act="toReady">Continue</button>
@@ -481,7 +483,7 @@
      right away, failures are shown on the board, and a finished game is
      only cleared once the cloud has confirmed it. Clock state is
      timestamps, so a running clock never generates writes by itself. */
-  const VERSION = 33;
+  const VERSION = 34;
   // Inside the Claude viewer the page has window.claude and can use the account store;
   // as a standalone home-screen app (GitHub Pages) phone storage is first-party and durable.
   const IN_VIEWER = !!(window.claude && typeof window.claude.use === 'function');
@@ -745,6 +747,8 @@
       status = run ? 'Running' : (ms === game.halfMin * 60000 ? 'Tap to start' : 'Stopped');
       if (game.half === 2 && ms <= 180000) { pre = within14 ? 'Stop time at 1:00 — within 14' : 'Clock runs at 1:00 — up by more than 14'; preKind = within14 ? 'stop' : 'run'; }
     }
+    // first minute of the 2nd half: keep the kickoff team on screen (covers an early start + stop)
+    if (game.status === 'live' && game.half === 2 && ms > game.halfMin * 60000 - 60000) { pre = game.teams[other(game.kickoff)].name + ' kicks off'; preKind = 'kick'; }
     c.dataset.state = state;
     $('clockStatus').textContent = status;
     $('clockSub').textContent = sub;

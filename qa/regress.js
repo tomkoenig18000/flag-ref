@@ -133,6 +133,7 @@ console.log(out.join('\n'));
   t.click('[data-act="timeoutAsk"][data-team="0"]'); t.slide('[data-slide="timeoutTake"]'); t.click('[data-act="tbSkip"]');
   t.click('#clock'); t.advance(2 * 60000 + 300); t.slide('[data-slide="startHalf2"]');
   P(!t.document.getElementById('toBtn0').disabled, 'time-outs refresh for the 2nd half');
+  P(/kicks off/.test(t.document.getElementById('clockPre').textContent), '2nd-half kickoff team shown in the first minute');
   t.click('[data-act="touchdown"][data-team="1"]');
   P(!!t.document.getElementById('convBar') && /6/.test(t.document.getElementById('convBar').textContent), 'conversion sheet shows score and clock');
   t.slide('[data-slide="conv"][data-pts="1"]');
