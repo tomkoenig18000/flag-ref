@@ -325,7 +325,7 @@
       <svg viewBox="0 0 44 44" aria-hidden="true"><rect x="2" y="2" width="40" height="40" rx="10" fill="var(--surface2)"/><path d="M13 9v27" stroke="var(--ink)" stroke-width="3" stroke-linecap="round"/><path d="M15 10h16l-4 6 4 6H15z" fill="var(--yellow)"/><path d="M15 23h13l-3 5 3 5H15z" fill="var(--blue)"/></svg>
       <div><h1>Flag Ref</h1><div class="eyebrow">Point Grey Cup · UBC Rec</div></div>
     </div>
-    <button class="link" data-act="diagnostics" style="padding:4px 0">v32</button>
+    <button class="link" data-act="diagnostics" style="padding:4px 0">v33</button>
   </div>
   <button class="sync" id="sync" data-state="saving" data-act="diagnostics">Connecting to your account…</button>
   <div id="resumeWrap"></div>
@@ -481,7 +481,7 @@
      right away, failures are shown on the board, and a finished game is
      only cleared once the cloud has confirmed it. Clock state is
      timestamps, so a running clock never generates writes by itself. */
-  const VERSION = 32;
+  const VERSION = 33;
   // Inside the Claude viewer the page has window.claude and can use the account store;
   // as a standalone home-screen app (GitHub Pages) phone storage is first-party and durable.
   const IN_VIEWER = !!(window.claude && typeof window.claude.use === 'function');
@@ -866,6 +866,23 @@
       <div class="hint" id="adjHint">Nothing changed yet. Tap ±1, then slide to apply.</div>
       ${slideHtml('adjustApply', 'Slide to apply')}
       <button class="link" data-act="close">Cancel</button>`);
+  }
+
+  let tbStaged = 0;
+  function renderTimeBack() {
+    $('tbVal').textContent = '+' + tbStaged + ' s';
+    $('tbClock').textContent = fmt(Math.min(g().halfMin * 60000, remainingMs(g()) + tbStaged * 1000));
+  }
+  function timeBackModal(i) {
+    const game = g(); const t = game.teams[i]; tbStaged = 0;
+    openModal(`<div class="banner ${t.flag}"><div class="eyebrow">${esc(t.name)} time-out taken</div><h2>Add time back</h2></div>
+      <div class="muted">Clock ran after the time-out was called? Tap +1 s for each second to give back, then slide.</div>
+      <div class="adj"><div class="box"><div class="n">Clock</div><div class="s num" id="tbClock">${fmt(remainingMs(game))}</div>
+        <div class="s num" id="tbVal" style="font-size:28px">+0 s</div>
+        <div class="row"><button class="btn" data-act="tbReset">Reset</button><button class="btn" data-act="tbAdd">+1 s</button></div></div></div>
+      ${slideHtml('tbApply', 'Slide to add time')}
+      <button class="link" data-act="tbSkip">No time to add</button>`, { lock: true });
+    $('sheet').dataset.team = String(i);
   }
 
   let reviveOnSet = false;
@@ -1271,7 +1288,15 @@
     timeoutTake() {
       const game = g(); const i = Number($('sheet').dataset.team); if (!game || game.status !== 'live' || toUsed(game, i)) { closeModal(); return; }
       stopClock(game); setToUsed(game, i, game.half, true); addLog(game, { team: i, type: 'timeout', pts: 0, half: game.half });
-      save(); closeModal(); renderBoard(); toast('Time-out: ' + game.teams[i].name + ' — clock stopped');
+      save(); renderBoard(); timeBackModal(i);
+    },
+    tbAdd() { const game = g(); const cap = Math.max(0, Math.floor((game.halfMin * 60000 - game.clock.remaining) / 1000)); tbStaged = Math.min(cap, tbStaged + 1); renderTimeBack(); },
+    tbSkip() { tbStaged = 0; actions.tbApply(); },
+    tbReset() { tbStaged = 0; renderTimeBack(); },
+    tbApply() {
+      const game = g(); const i = Number($('sheet').dataset.team); if (!game) { closeModal(); return; }
+      if (tbStaged > 0 && !running(game)) { game.clock.remaining = Math.min(game.halfMin * 60000, game.clock.remaining + tbStaged * 1000); save(); }
+      closeModal(); renderBoard(); toast('Time-out: ' + game.teams[i].name + (tbStaged > 0 ? ' — +' + tbStaged + ' s added back' : ' — clock stopped'));
     },
     twoAsk(d) {
       const game = g(); if (game.pending) { conversionModal(); return; }
