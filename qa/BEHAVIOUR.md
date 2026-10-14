@@ -36,7 +36,7 @@ Home → New game → Setup (names, flag colours, who kicks off 1st half, half l
 ## Finish / history
 - Save & finish: game moves to Past games (home), grouped by league week: Tue–Thu blocks from Tue Sep 29 2026 = Week 1, … ; Tue Nov 24 2026 onward = "Playoffs · Week N"; games on Fri–Mon or outside the season go under "Test / other". Most recent week first, Test/other last.
 - Tap a past game: log + Share + Delete (confirm). Delete removes exactly that game.
-- Share text: "Team (flag) X – Y Team (flag)", FINAL or (in progress), plus scoring lines like "2H 4:12  Tigers · 1-pt conversion  +1".
+- Share text: "Team (flag) X – Y Team (flag)", FINAL or (in progress), plus scoring lines like "H2 4:12  Tigers · 1-pt conversion  +1".
 - Quick rules and Diagnostics open as modals from home, setup, ready and the game menu without losing setup inputs.
 
 ## Keyboard (Bluetooth clicker)

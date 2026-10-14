@@ -353,7 +353,7 @@
       <svg viewBox="0 0 44 44" aria-hidden="true"><rect x="2" y="2" width="40" height="40" rx="10" fill="var(--surface2)"/><path d="M13 9v27" stroke="var(--ink)" stroke-width="3" stroke-linecap="round"/><path d="M15 10h16l-4 6 4 6H15z" fill="var(--yellow)"/><path d="M15 23h13l-3 5 3 5H15z" fill="var(--blue)"/></svg>
       <div><h1>Flag Ref</h1><div class="eyebrow">Point Grey Cup · UBC Rec</div></div>
     </div>
-    <button class="link" data-act="diagnostics" style="padding:4px 0">v31</button>
+    <button class="link" data-act="diagnostics" style="padding:4px 0">v32</button>
   </div>
   <button class="sync" id="sync" data-state="saving" data-act="diagnostics">Connecting to your account…</button>
   <div id="resumeWrap"></div>
@@ -509,7 +509,7 @@
      right away, failures are shown on the board, and a finished game is
      only cleared once the cloud has confirmed it. Clock state is
      timestamps, so a running clock never generates writes by itself. */
-  const VERSION = 31;
+  const VERSION = 32;
   // Inside the Claude viewer the page has window.claude and can use the account store;
   // as a standalone home-screen app (GitHub Pages) phone storage is first-party and durable.
   const IN_VIEWER = !!(window.claude && typeof window.claude.use === 'function');
@@ -623,7 +623,7 @@
   function startClock(game) { if (!running(game) && remainingMs(game) > 0) { game.clock.since = Date.now(); } }
   function stopClock(game) { if (running(game)) { game.clock.remaining = remainingMs(game); game.clock.since = null; } }
   function fmt(ms) { const s = Math.ceil(ms / 1000); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); }
-  function stampOf(game) { return (game.half === 1 ? '1H ' : '2H ') + fmt(remainingMs(game)); }
+  function stampOf(game) { return (game.half === 1 ? 'H1 ' : 'H2 ') + fmt(remainingMs(game)); }
   function isStopTime(game) { return game.half === 2 && remainingMs(game) <= 60000 && Math.abs(game.teams[0].score - game.teams[1].score) <= 14; }
   function shortDate(ts) { return new Date(ts).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' }); }
   function shortTime(ts) { return new Date(ts).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' }); }
@@ -657,7 +657,7 @@
   function logLine(game, e) {
     const n = game.teams[e.team].name;
     const pts = e.pts > 0 ? '+' + e.pts : e.pts < 0 ? String(e.pts) : '—';
-    return { stamp: e.stamp, text: n + ' · ' + LABEL[e.type], pts };
+    return { stamp: String(e.stamp).replace(/^([12])H /, 'H$1 '), text: n + ' · ' + LABEL[e.type], pts };
   }
 
   /* ---------- screens ---------- */
@@ -745,7 +745,7 @@
       $('bScore' + i).textContent = t[i].score;
     });
     const last = game.log[game.log.length - 1];
-    $('lastplay').innerHTML = last ? `<b>${esc(t[last.team].name)}</b> · ${LABEL[last.type]} <span class="num">${last.pts > 0 ? '+' + last.pts : last.pts < 0 ? last.pts : ''}</span> <span class="muted num">${last.stamp}</span>` : 'No scoring yet';
+    $('lastplay').innerHTML = last ? `<b>${esc(t[last.team].name)}</b> · ${LABEL[last.type]} <span class="num">${last.pts > 0 ? '+' + last.pts : last.pts < 0 ? last.pts : ''}</span> <span class="muted num">${logLine(game, last).stamp}</span>` : 'No scoring yet';
     $('undoBtn').disabled = !last;
     [0, 1].forEach((i) => {
       const b = $('toBtn' + i); const used = toUsed(game, i); const live = game.status === 'live';
