@@ -52,3 +52,7 @@ Home → New game → Setup (names, flag colours, who kicks off 1st half, half l
 - Stop time: clock block is green while running, red while stopped.
 - Lock screen score (menu toggle, off by default): media-session card with score + half clock; needs a real iPhone to verify.
 - Setup inputs are swapped for fresh copies on Continue/Start so iOS shake-to-undo has no typing to undo.
+
+## v31 additions
+- "+2" button under each team's time-out opens a sheet with two slides: Safety and Conversion return. Either adds 2 to that team, is logged (`safety` / `ret2`), doesn't touch the clock, and is undoable. Disabled while a conversion is pending (opens the conversion sheet instead).
+- Setup has Regular / Scrimmage. `game.scrimmage` shows on the Ready screen, board pill, saved list, log title and share text.

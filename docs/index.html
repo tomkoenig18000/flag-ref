@@ -353,7 +353,7 @@
       <svg viewBox="0 0 44 44" aria-hidden="true"><rect x="2" y="2" width="40" height="40" rx="10" fill="var(--surface2)"/><path d="M13 9v27" stroke="var(--ink)" stroke-width="3" stroke-linecap="round"/><path d="M15 10h16l-4 6 4 6H15z" fill="var(--yellow)"/><path d="M15 23h13l-3 5 3 5H15z" fill="var(--blue)"/></svg>
       <div><h1>Flag Ref</h1><div class="eyebrow">Point Grey Cup · UBC Rec</div></div>
     </div>
-    <button class="link" data-act="diagnostics" style="padding:4px 0">v30</button>
+    <button class="link" data-act="diagnostics" style="padding:4px 0">v31</button>
   </div>
   <button class="sync" id="sync" data-state="saving" data-act="diagnostics">Connecting to your account…</button>
   <div id="resumeWrap"></div>
@@ -403,6 +403,15 @@
     <div class="hint">20 by default. Shorten it if the game starts late — finishing inside the hour is the priority this year.</div>
   </div>
 
+  <div class="field">
+    <label>Game type</label>
+    <div class="seg">
+      <button data-act="setScrimmage" data-v="0" aria-pressed="true" id="gt0">Regular</button>
+      <button data-act="setScrimmage" data-v="1" aria-pressed="false" id="gt1">Scrimmage</button>
+    </div>
+    <div class="hint">Scrimmage = a practice game when a team forfeits. It's saved and shared marked as a scrimmage.</div>
+  </div>
+
   <div class="spacer"></div>
   <div class="err" id="setupErr"></div>
   <button class="btn primary huge" data-act="toReady">Continue</button>
@@ -421,6 +430,7 @@
       <div><div class="t" id="rName1"></div><div style="margin-top:8px"><span class="chip" id="rChip1"></span></div></div>
     </div>
   </div>
+  <div class="card" id="rScrim" hidden><span class="chip">Scrimmage</span> <span class="muted">Not a league game — saved and shared as a scrimmage.</span></div>
   <div class="card">
     <div class="eyebrow">Kickoffs</div>
     <div id="rKick"></div>
@@ -454,12 +464,14 @@
       <div class="score num" id="bScore0">0</div>
       <button class="btn td" data-act="touchdown" data-team="0">TD<small>+6</small></button>
       <button class="btn small ghost to" data-act="timeoutAsk" data-team="0" id="toBtn0">Time-out</button>
+      <button class="btn small ghost to" data-act="twoAsk" data-team="0">+2 <small>safety / return</small></button>
     </div>
     <div class="team" id="team1" data-flag="blue">
       <div class="head" id="bName1"></div>
       <div class="score num" id="bScore1">0</div>
       <button class="btn td" data-act="touchdown" data-team="1">TD<small>+6</small></button>
       <button class="btn small ghost to" data-act="timeoutAsk" data-team="1" id="toBtn1">Time-out</button>
+      <button class="btn small ghost to" data-act="twoAsk" data-team="1">+2 <small>safety / return</small></button>
     </div>
   </div>
 
@@ -497,7 +509,7 @@
      right away, failures are shown on the board, and a finished game is
      only cleared once the cloud has confirmed it. Clock state is
      timestamps, so a running clock never generates writes by itself. */
-  const VERSION = 30;
+  const VERSION = 31;
   // Inside the Claude viewer the page has window.claude and can use the account store;
   // as a standalone home-screen app (GitHub Pages) phone storage is first-party and durable.
   const IN_VIEWER = !!(window.claude && typeof window.claude.use === 'function');
@@ -594,7 +606,7 @@
       id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), createdAt: Date.now(), startedAt: null, endedAt: null,
       teams: [{ name: '', flag: 'yellow', score: 0 }, { name: '', flag: 'blue', score: 0 }],
       kickoff: null, halfMin: hm, half: 1, status: 'setup',   // setup | ready | live | halftime | over
-      clock: { remaining: hm * 60000, since: null }, log: [], pending: null, warned: false,
+      clock: { remaining: hm * 60000, since: null }, log: [], pending: null, warned: false, scrimmage: false,
       // fairPlay[i] = the 1–5 fair-play score team i RECEIVED from the other team (IM requirement), plus a comment
       fairPlay: [{ score: null, note: '' }, { score: null, note: '' }]
     };
@@ -641,7 +653,7 @@
   }
 
   function addLog(game, entry) { game.log.push({ t: Date.now(), stamp: stampOf(game), ...entry }); }
-  const LABEL = { td: 'Touchdown', conv2: '2-pt conversion', conv1: '1-pt conversion', conv0: 'Conversion no good', adjust: 'Score adjusted', timeout: 'Time-out' };
+  const LABEL = { td: 'Touchdown', conv2: '2-pt conversion', conv1: '1-pt conversion', conv0: 'Conversion no good', safety: 'Safety', ret2: '2-pt conversion return', adjust: 'Score adjusted', timeout: 'Time-out' };
   function logLine(game, e) {
     const n = game.teams[e.team].name;
     const pts = e.pts > 0 ? '+' + e.pts : e.pts < 0 ? String(e.pts) : '—';
@@ -691,7 +703,7 @@
       ${items.map((i) => { const game = S.games[i]; const t = game.teams; return `<button class="game" data-act="viewGame" data-id="${esc(game.id)}">
         <div class="teams"><span class="dot ${t[0].flag}"></span>${esc(t[0].name)} <span class="muted">vs</span> <span class="dot ${t[1].flag}"></span>${esc(t[1].name)}</div>
         <div class="score num">${t[0].score}–${t[1].score}</div>
-        <div class="when">${shortDate(game.endedAt || game.createdAt)} · ${shortTime(game.startedAt || game.createdAt)}</div>
+        <div class="when">${game.scrimmage ? 'Scrimmage · ' : ''}${shortDate(game.endedAt || game.createdAt)} · ${shortTime(game.startedAt || game.createdAt)}</div>
       </button>`; }).join('')}`).join('');
   }
 
@@ -706,6 +718,7 @@
       $('kick' + i).setAttribute('aria-pressed', String(game.kickoff === Number(i)));
     });
     $('halfMin').value = game.halfMin;
+    [0, 1].forEach((v) => $('gt' + v).setAttribute('aria-pressed', String(!!game.scrimmage === !!v)));
     $('setupErr').textContent = '';
   }
 
@@ -716,13 +729,14 @@
     const k = game.kickoff;
     $('rKick').innerHTML = `<div><b>1st half:</b> ${esc(t[k].name)} kicks off, ${esc(t[other(k)].name)} receives</div>
       <div><b>2nd half:</b> ${esc(t[other(k)].name)} kicks off, ${esc(t[k].name)} receives</div>`;
+    $('rScrim').hidden = !game.scrimmage;
     $('rHalf').textContent = game.halfMin + '-minute halves · running clock · stop time in the last minute of the 2nd half when within 14';
   }
 
   function renderBoard() {
     const game = g(); if (!game) return;
     const t = game.teams;
-    $('halfPill').textContent = game.status === 'halftime' ? 'Halftime' : game.status === 'over' ? 'Final' : (game.half === 1 ? '1st half' : '2nd half');
+    $('halfPill').textContent = (game.scrimmage ? 'Scrim · ' : '') + (game.status === 'halftime' ? 'Halftime' : game.status === 'over' ? 'Final' : (game.half === 1 ? '1st half' : '2nd half'));
     const k = game.kickoff;
     $('kickNote').textContent = game.half === 1 ? '2nd half kickoff: ' + t[other(k)].name : (game.status === 'over' ? '' : t[other(k)].name + ' kicked off');
     [0, 1].forEach((i) => {
@@ -908,7 +922,7 @@
   function viewGameModal(id) {
     const game = S.games.find((x) => x.id === id); if (!game) { renderHome(); return; }
     logModal(game, {
-      title: shortDate(game.endedAt || game.createdAt) + ' · ' + shortTime(game.endedAt || game.createdAt),
+      title: (game.scrimmage ? 'Scrimmage · ' : '') + shortDate(game.endedAt || game.createdAt) + ' · ' + shortTime(game.endedAt || game.createdAt),
       footer: `<div class="stack"><button class="btn primary" data-act="shareSaved" data-id="${esc(id)}">Share score</button>
         <button class="btn ghost" data-act="deleteSaved" data-id="${esc(id)}" style="color:var(--danger);border-color:var(--danger)">Delete</button>
         <button class="link" data-act="close">Close</button></div>`
@@ -1087,7 +1101,7 @@
     const t = game.teams;
     const when = shortDate(game.endedAt || game.createdAt) + ' ' + shortTime(game.startedAt || game.createdAt);
     const lines = [
-      'Flag football — ' + when,
+      'Flag football' + (game.scrimmage ? ' (SCRIMMAGE)' : '') + ' — ' + when,
       `${t[0].name} (${t[0].flag}) ${t[0].score} – ${t[1].score} ${t[1].name} (${t[1].flag})`,
       game.status !== 'over' && game.status !== 'final' ? '(in progress)' : 'FINAL'
     ];
@@ -1242,6 +1256,7 @@
     deleteSavedConfirm() { const id = $('sheet').dataset.id; const gone = S.games.find((x) => x.id === id); if (gone) { S.games = S.games.filter((x) => x.id !== id); S.unsyncedGames = S.unsyncedGames.filter((x) => x !== id); S.unsyncedDeletes.push(id); } save(); closeModal(); renderHome(); },
 
     setFlag(d) { const game = g(); const i = Number(d.team); game.teams[i].flag = d.flag; game.teams[other(i)].flag = d.flag === 'yellow' ? 'blue' : 'yellow'; save(); renderSetup(); },
+    setScrimmage(d) { readSetup(); g().scrimmage = d.v === '1'; save(); renderSetup(); },
     setKick(d) { g().kickoff = Number(d.team); save(); renderSetup(); },
     toReady() {
       const game = g(); readSetup();
@@ -1285,6 +1300,25 @@
       const game = g(); const i = Number($('sheet').dataset.team); if (!game || game.status !== 'live' || toUsed(game, i)) { closeModal(); return; }
       stopClock(game); setToUsed(game, i, game.half, true); addLog(game, { team: i, type: 'timeout', pts: 0, half: game.half });
       save(); closeModal(); renderBoard(); toast('Time-out: ' + game.teams[i].name + ' — clock stopped');
+    },
+    twoAsk(d) {
+      const game = g(); if (game.pending) { conversionModal(); return; }
+      const i = Number(d.team); const t = game.teams[i];
+      openModal(`<div class="banner ${t.flag}"><div class="eyebrow">+2 points</div><h2>${esc(t.name)}</h2></div>
+        <div class="stack">
+          ${slideHtml('twoScore', 'Safety', 'primary', 'data-kind="safety"')}
+          ${slideHtml('twoScore', 'Conversion return', 'primary', 'data-kind="ret2"')}
+        </div>
+        <div class="hint" style="text-align:center"><b>Safety:</b> the other team was downed in its own end zone. <b>Conversion return:</b> ${esc(t.name)}'s defense returned a conversion to the end zone. Slide to add 2.</div>
+        <button class="link" data-act="close">Cancel</button>`);
+      $('sheet').dataset.team = String(i);
+    },
+    twoScore(d) {
+      const game = g(); const i = Number($('sheet').dataset.team); const kind = d.kind === 'ret2' ? 'ret2' : 'safety';
+      if (!game || game.pending) { closeModal(); return; }
+      game.teams[i].score += 2; addLog(game, { team: i, type: kind, pts: 2 });
+      save(); closeModal(); renderBoard(); bannerPending = false;
+      if (game.status === 'halftime') halftimeModal(); else if (game.status === 'over') finalModal();
     },
     touchdown(d) {
       unlockAudio(); const game = g(); if (game.pending) { conversionModal(); return; }

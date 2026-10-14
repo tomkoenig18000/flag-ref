@@ -158,3 +158,19 @@ console.log(out.join('\n'));
   k.click('[data-act="setFlag"][data-team="0"][data-flag="blue"]');
   console.log((c() === 'blue,yellow' && k.errors().length === 0 ? 'PASS ' : 'FAIL ') + 'kickoff colours follow a flag swap — ' + c());
 }
+// v31: +2 (safety / conversion return) and scrimmage
+{
+  const P = (c, m) => console.log((c ? 'PASS ' : 'FAIL ') + m);
+  let t = quickGame(boot(), { halfMin: 2 });
+  t.click('[data-act="twoAsk"][data-team="1"]');
+  P(/Safety/.test(t.modal() || '') && t.state().current.teams[1].score === 0 && t.state().current.log.length === 0, '+2 tap only opens a sheet');
+  t.slide('[data-slide="twoScore"][data-kind="safety"]');
+  P(t.state().current.teams[1].score === 2 && t.state().current.log[0].type === 'safety' && t.state().current.clock.since !== null, 'safety slide adds 2, logs it, leaves the clock running');
+  t.click('[data-act="twoAsk"][data-team="0"]'); t.slide('[data-slide="twoScore"][data-kind="ret2"]');
+  P(t.state().current.teams[0].score === 2 && t.state().current.log[1].type === 'ret2', 'conversion return slide adds 2 and logs it');
+  t.click('[data-act="undo"]'); t.slide('[data-slide="undoConfirm"]');
+  P(t.state().current.teams[0].score === 0 && !t.state().current.pending, 'undo removes the conversion return without reopening the conversion sheet');
+  P(t.errors().length === 0, 'no errors +2');
+  let s = boot(); s.click('[data-act="newGame"]'); s.click('[data-act="setScrimmage"][data-v="1"]');
+  P(s.state().current.scrimmage === true, 'scrimmage toggle on setup');
+}
