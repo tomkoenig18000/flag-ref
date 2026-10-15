@@ -171,8 +171,12 @@ console.log(out.join('\n'));
   P(/Safety/.test(t.modal() || '') && t.state().current.teams[1].score === 0 && t.state().current.log.length === 0, '+2 tap only opens a sheet');
   t.slide('[data-slide="twoScore"][data-kind="safety"]');
   P(t.state().current.teams[1].score === 2 && t.state().current.log[0].type === 'safety' && t.state().current.clock.since !== null, 'safety slide adds 2, logs it, leaves the clock running');
-  t.click('[data-act="twoAsk"][data-team="0"]'); t.slide('[data-slide="twoScore"][data-kind="ret2"]');
-  P(t.state().current.teams[0].score === 2 && t.state().current.log[1].type === 'ret2', 'conversion return slide adds 2 and logs it');
+  P(!t.modal() || !/Conversion return/.test(t.modal()), '+2 sheet is safety only');
+  t.click('[data-act="touchdown"][data-team="1"]'); t.slide('[data-slide="convReturn"]');
+  { const c = t.state().current; P(c.teams[0].score === 2 && c.teams[1].score === 8 && c.log[2].type === 'ret2' && c.log[2].team === 0 && !c.pending, 'conversion return slide: defense gets 2, TD team keeps 6, pending cleared'); }
+  t.click('[data-act="undo"]'); t.slide('[data-slide="undoConfirm"]');
+  { const c = t.state().current; P(c.teams[0].score === 0 && c.pending && c.pending.team === 1, 'undoing a conversion return reopens the conversion choice'); }
+  t.click('[data-act="undoTD"]');
   t.click('[data-act="undo"]'); t.slide('[data-slide="undoConfirm"]');
   P(t.state().current.teams[0].score === 0 && !t.state().current.pending, 'undo removes the conversion return without reopening the conversion sheet');
   P(t.errors().length === 0, 'no errors +2');

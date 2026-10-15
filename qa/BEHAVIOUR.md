@@ -54,5 +54,7 @@ Home → New game → Setup (names, flag colours, who kicks off 1st half, half l
 - Setup inputs are swapped for fresh copies on Continue/Start so iOS shake-to-undo has no typing to undo.
 
 ## v31 additions
-- "+2" button under each team's time-out opens a sheet with two slides: Safety and Conversion return. Either adds 2 to that team, is logged (`safety` / `ret2`), doesn't touch the clock, and is undoable. Disabled while a conversion is pending (opens the conversion sheet instead).
+- "+2" button under each team's time-out opens a sheet with one slide: Safety. It adds 2 to that team, is logged (`safety`), doesn't touch the clock, and is undoable. Disabled while a conversion is pending (opens the conversion sheet instead).
 - Setup has Regular / Scrimmage. `game.scrimmage` shows on the Ready screen, board pill, saved list, log title and share text.
+
+- Conversion sheet (after a touchdown) has a fourth slide, "<defense> return": the defending team gets 2, logged as `ret2`, the pending conversion is cleared (the TD team keeps its 6). Undoing it reopens the conversion choice.

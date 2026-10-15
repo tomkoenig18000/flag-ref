@@ -326,7 +326,7 @@
       <svg viewBox="0 0 44 44" aria-hidden="true"><rect x="2" y="2" width="40" height="40" rx="10" fill="var(--surface2)"/><path d="M13 9v27" stroke="var(--ink)" stroke-width="3" stroke-linecap="round"/><path d="M15 10h16l-4 6 4 6H15z" fill="var(--yellow)"/><path d="M15 23h13l-3 5 3 5H15z" fill="var(--blue)"/></svg>
       <div><h1>Flag Ref</h1><div class="eyebrow">Point Grey Cup · UBC Rec</div></div>
     </div>
-    <button class="link" data-act="diagnostics" style="padding:4px 0">v34</button>
+    <button class="link" data-act="diagnostics" style="padding:4px 0">v35</button>
   </div>
   <button class="sync" id="sync" data-state="saving" data-act="diagnostics">Connecting to your account…</button>
   <div id="resumeWrap"></div>
@@ -438,14 +438,14 @@
       <div class="score num" id="bScore0">0</div>
       <button class="btn td" data-act="touchdown" data-team="0">TD<small>+6</small></button>
       <button class="btn small ghost to" data-act="timeoutAsk" data-team="0" id="toBtn0">Time-out</button>
-      <button class="btn small ghost to" data-act="twoAsk" data-team="0">+2 <small>safety / return</small></button>
+      <button class="btn small ghost to" data-act="twoAsk" data-team="0">+2 <small>safety</small></button>
     </div>
     <div class="team" id="team1" data-flag="blue">
       <div class="head" id="bName1"></div>
       <div class="score num" id="bScore1">0</div>
       <button class="btn td" data-act="touchdown" data-team="1">TD<small>+6</small></button>
       <button class="btn small ghost to" data-act="timeoutAsk" data-team="1" id="toBtn1">Time-out</button>
-      <button class="btn small ghost to" data-act="twoAsk" data-team="1">+2 <small>safety / return</small></button>
+      <button class="btn small ghost to" data-act="twoAsk" data-team="1">+2 <small>safety</small></button>
     </div>
   </div>
 
@@ -483,7 +483,7 @@
      right away, failures are shown on the board, and a finished game is
      only cleared once the cloud has confirmed it. Clock state is
      timestamps, so a running clock never generates writes by itself. */
-  const VERSION = 34;
+  const VERSION = 35;
   // Inside the Claude viewer the page has window.claude and can use the account store;
   // as a standalone home-screen app (GitHub Pages) phone storage is first-party and durable.
   const IN_VIEWER = !!(window.claude && typeof window.claude.use === 'function');
@@ -779,7 +779,7 @@
   }
   function conversionModal() {
     const game = g(); const p = game.pending; if (!p) return;
-    const t = game.teams[p.team];
+    const t = game.teams[p.team]; const t2 = game.teams[other(p.team)];
     openModal(`<div class="banner ${t.flag}"><div class="eyebrow">Touchdown · +6</div><h2>${esc(t.name)}</h2></div>
       ${convBarHtml(game)}
       <div class="eyebrow">Conversion result?</div>
@@ -787,6 +787,7 @@
         <div class="slide primary" data-slide="conv" data-pts="2"><div class="slide-label">2 points <small>from the 10</small></div><div class="slide-hint">›››</div><div class="slide-knob"></div></div>
         <div class="slide primary" data-slide="conv" data-pts="1"><div class="slide-label">1 point <small>from the 5</small></div><div class="slide-hint">›››</div><div class="slide-knob"></div></div>
         <div class="slide ghost" data-slide="conv" data-pts="0"><div class="slide-label">No good</div><div class="slide-hint">›››</div><div class="slide-knob"></div></div>
+        <div class="slide ghost" data-slide="convReturn"><div class="slide-label">${esc(t2.name)} return <small>defense scores 2</small></div><div class="slide-hint">›››</div><div class="slide-knob"></div></div>
       </div>
       <div class="hint" style="text-align:center">Slide to confirm — protects against pocket touches.</div>
       <button class="link" data-act="undoTD">Oops — that wasn't a touchdown</button>`, { lock: true, full: true });
@@ -1308,14 +1309,13 @@
       openModal(`<div class="banner ${t.flag}"><div class="eyebrow">+2 points</div><h2>${esc(t.name)}</h2></div>
         <div class="stack">
           ${slideHtml('twoScore', 'Safety', 'primary', 'data-kind="safety"')}
-          ${slideHtml('twoScore', 'Conversion return', 'primary', 'data-kind="ret2"')}
         </div>
-        <div class="hint" style="text-align:center"><b>Safety:</b> the other team was downed in its own end zone. <b>Conversion return:</b> ${esc(t.name)}'s defense returned a conversion to the end zone. Slide to add 2.</div>
+        <div class="hint" style="text-align:center">The other team was downed in its own end zone. Slide to add 2 for ${esc(t.name)}. A returned conversion is scored from the conversion screen after a touchdown.</div>
         <button class="link" data-act="close">Cancel</button>`);
       $('sheet').dataset.team = String(i);
     },
     twoScore(d) {
-      const game = g(); const i = Number($('sheet').dataset.team); const kind = d.kind === 'ret2' ? 'ret2' : 'safety';
+      const game = g(); const i = Number($('sheet').dataset.team); const kind = 'safety';
       if (!game || game.pending) { closeModal(); return; }
       game.teams[i].score += 2; addLog(game, { team: i, type: kind, pts: 2 });
       save(); closeModal(); renderBoard(); bannerPending = false;
@@ -1334,6 +1334,13 @@
       game.pending = null; save(); closeModal(); renderBoard(); bannerPending = false;
       if (game.status === 'halftime') halftimeModal(); else if (game.status === 'over') finalModal();
     },
+    convReturn() {
+      const game = g(); const p = game.pending; if (!p) { closeModal(); return; }
+      const d = other(p.team);
+      game.teams[d].score += 2; addLog(game, { team: d, type: 'ret2', pts: 2, fromConv: true });
+      game.pending = null; save(); closeModal(); renderBoard(); bannerPending = false;
+      if (game.status === 'halftime') halftimeModal(); else if (game.status === 'over') finalModal();
+    },
     undoTD() { const game = g(); const p = game.pending; if (!p) { closeModal(); return; } game.teams[p.team].score -= 6; game.log.pop(); game.pending = null; save(); closeModal(); renderBoard(); toast('Touchdown removed'); showPendingBanner(); },
     undo() {
       const game = g(); const last = game.log[game.log.length - 1]; if (!last) return;
@@ -1348,7 +1355,8 @@
       const game = g(); const last = game.log.pop(); if (!last) return;
       game.teams[last.team].score -= last.pts;
       if (last.type === 'timeout') setToUsed(game, last.team, last.half || game.half, false);
-      if (last.type === 'td') game.pending = null;
+      if (last.type === 'ret2' && last.fromConv) game.pending = { team: other(last.team) };
+      else if (last.type === 'td') game.pending = null;
       else if (last.type.startsWith('conv')) { game.pending = { team: last.team }; }
       save(); renderBoard(); toast('Undid: ' + game.teams[last.team].name + ' ' + LABEL[last.type]);
       if (game.pending) conversionModal();
