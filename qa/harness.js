@@ -105,6 +105,8 @@ function boot(opts = {}) {
     },
     /** set an input's value and fire input */
     type(id, value) { const el = document.getElementById(id); if (!el) throw new Error('type: no #' + id); el.value = value; el.dispatchEvent(new window.Event('input', { bubbles: true })); return app; },
+    /** choose a <select> option and fire change */
+    pick(id, value) { const el = document.getElementById(id); if (!el) throw new Error('pick: no #' + id); if (el.disabled) throw new Error('pick: #' + id + ' is disabled'); el.value = String(value); el.dispatchEvent(new window.Event('change', { bubbles: true })); return app; },
     key(code) { document.dispatchEvent(new window.KeyboardEvent('keydown', { code, key: code === 'Space' ? ' ' : code, bubbles: true, cancelable: true })); runTimers(now); return app; },
     /** the app's persisted state (what localStorage holds) */
     state() { const r = storage.get('flagref.v1'); return r ? JSON.parse(r) : null; },
@@ -139,6 +141,7 @@ function quickGame(app, o = {}) {
   app.click('[data-act="newGame"]');
   app.type('name0', o.a || 'Tigers'); app.type('name1', o.b || 'Sharks');
   if (o.halfMin) app.type('halfMin', String(o.halfMin));
+  if (o.jersey) { app.pick('jersey0', o.jersey[0]); app.pick('jersey1', o.jersey[1]); }
   app.click('#kick' + (o.kick || 0));
   app.click('[data-act="toReady"]');
   app.click('[data-act="startGame"]');

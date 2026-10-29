@@ -144,6 +144,12 @@
     background: var(--surface); border: 2px solid var(--line); border-radius: 12px; padding: 12px 14px;
   }
   input[type="text"]:focus, input[type="number"]:focus { border-color: var(--ink); outline: none; }
+  select { font: inherit; font-size: 20px; font-weight: 700; color: var(--ink); background: var(--surface); border: 2px solid var(--line); border-radius: 12px; padding: 10px 12px; min-height: 52px; min-width: 96px; }
+  select:disabled { opacity: .45; }
+  .jrow { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .jrow label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  .jrow.flag-yellow { border-left: 6px solid var(--yellow); padding-left: 10px; }
+  .jrow.flag-blue { border-left: 6px solid var(--blue); padding-left: 10px; }
   .teamsetup { border-left: 6px solid var(--line); padding-left: 12px; }
   .teamsetup[data-flag="yellow"] { border-color: var(--yellow); }
   .teamsetup[data-flag="blue"] { border-color: var(--blue); }
@@ -326,7 +332,7 @@
       <svg viewBox="0 0 44 44" aria-hidden="true"><rect x="2" y="2" width="40" height="40" rx="10" fill="var(--surface2)"/><path d="M13 9v27" stroke="var(--ink)" stroke-width="3" stroke-linecap="round"/><path d="M15 10h16l-4 6 4 6H15z" fill="var(--yellow)"/><path d="M15 23h13l-3 5 3 5H15z" fill="var(--blue)"/></svg>
       <div><h1>Flag Ref</h1><div class="eyebrow">Point Grey Cup · UBC Rec</div></div>
     </div>
-    <button class="link" data-act="diagnostics" style="padding:4px 0">v35</button>
+    <button class="link" data-act="diagnostics" style="padding:4px 0">v36</button>
   </div>
   <button class="sync" id="sync" data-state="saving" data-act="diagnostics">Connecting to your account…</button>
   <div id="resumeWrap"></div>
@@ -385,6 +391,14 @@
     <div class="hint">Scrimmage = a practice game when a team forfeits. It's saved and shared marked as a scrimmage.</div>
   </div>
 
+  <div class="field" id="jerseyField">
+    <label>Players without a jersey</label>
+    <div class="jrow" id="jr0"><label for="jersey0" id="jl0">Team 1</label><select id="jersey0" data-jersey="0"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></div>
+    <div class="jrow" id="jr1"><label for="jersey1" id="jl1">Team 2</label><select id="jersey1" data-jersey="1"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></div>
+    <div class="hint" id="jerseyHint"></div>
+    <div class="jrow"><label for="jerseyWeek">Jersey deadline (last week without penalty)</label><select id="jerseyWeek"><option value="1">Week 1</option><option value="2">Week 2</option><option value="3">Week 3</option><option value="4">Week 4</option><option value="5">Week 5</option><option value="6">Week 6</option><option value="7">Week 7</option><option value="8">Week 8</option></select></div>
+  </div>
+
   <div class="hint" style="text-align:center">🚩 Before kickoff: check every player's flag belt is worn over their outer clothing, so the flags are fully accessible.</div>
   <div class="spacer"></div>
   <div class="err" id="setupErr"></div>
@@ -404,6 +418,7 @@
       <div><div class="t" id="rName1"></div><div style="margin-top:8px"><span class="chip" id="rChip1"></span></div></div>
     </div>
   </div>
+  <div class="card" id="rJersey" hidden></div>
   <div class="card" id="rScrim" hidden><span class="chip">Scrimmage</span> <span class="muted">Not a league game — saved and shared as a scrimmage.</span></div>
   <div class="card">
     <div class="eyebrow">Kickoffs</div>
@@ -464,7 +479,7 @@
   'use strict';
   const KEY = 'flagref.v1';
   const $ = (id) => document.getElementById(id);
-  const DEFAULT = { current: null, games: [], settings: { halfMin: 20 }, updatedAt: 0, unsyncedGames: [], unsyncedDeletes: [] };
+  const DEFAULT = { current: null, games: [], settings: { halfMin: 20, jerseyWeek: 3 }, updatedAt: 0, unsyncedGames: [], unsyncedDeletes: [] };
   let S = load();
   let modalLock = false;          // true when the sheet must be answered (conversion)
   let wakeLock = null;
@@ -483,7 +498,7 @@
      right away, failures are shown on the board, and a finished game is
      only cleared once the cloud has confirmed it. Clock state is
      timestamps, so a running clock never generates writes by itself. */
-  const VERSION = 35;
+  const VERSION = 36;
   // Inside the Claude viewer the page has window.claude and can use the account store;
   // as a standalone home-screen app (GitHub Pages) phone storage is first-party and durable.
   const IN_VIEWER = !!(window.claude && typeof window.claude.use === 'function');
@@ -582,7 +597,8 @@
       kickoff: null, halfMin: hm, half: 1, status: 'setup',   // setup | ready | live | halftime | over
       clock: { remaining: hm * 60000, since: null }, log: [], pending: null, warned: false, scrimmage: false,
       // fairPlay[i] = the 1–5 fair-play score team i RECEIVED from the other team (IM requirement), plus a comment
-      fairPlay: [{ score: null, note: '' }, { score: null, note: '' }]
+      fairPlay: [{ score: null, note: '' }, { score: null, note: '' }],
+      jersey: [0, 0]   // players without a jersey after the deadline: -2 pts each, applied at kickoff
     };
   }
   const g = () => S.current;
@@ -620,14 +636,25 @@
       const n = Math.round((tue - first) / 6048e5) + 1;
       const fmtD = (x) => x.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
       const dates = fmtD(tue) + ' – ' + fmtD(thu);
-      if (tue >= po) { const pn = Math.round((tue - po) / 6048e5) + 1; return { key: sn.name + ':P' + pn, label: 'Playoffs · Week ' + pn, dates, sort: tue.getTime() }; }
-      return { key: sn.name + ':' + n, label: 'Week ' + n, dates, sort: tue.getTime() };
+      if (tue >= po) { const pn = Math.round((tue - po) / 6048e5) + 1; return { key: sn.name + ':P' + pn, label: 'Playoffs · Week ' + pn, dates, po: true, n: pn, sort: tue.getTime() }; }
+      return { key: sn.name + ':' + n, label: 'Week ' + n, dates, po: false, n, sort: tue.getTime() };
     }
     return null;
   }
 
+  /* Jersey rule: after the deadline week each player without a jersey costs their team 2 points.
+     Regular league games only; before the deadline (or in a scrimmage) nothing is deducted. */
+  const JERSEY_PTS = 2;
+  function jerseyRule(game) {
+    const dl = S.settings.jerseyWeek || 3, w = weekOf(game.startedAt || game.createdAt);
+    if (game.scrimmage) return { on: false, why: 'Scrimmage — no jersey deduction.', dl };
+    if (w && !w.po && w.n <= dl) return { on: false, why: 'Week ' + w.n + ' is on or before the jersey deadline (week ' + dl + ') — no deduction yet.', dl };
+    return { on: true, why: w ? 'Past the jersey deadline (week ' + dl + '): each player without a jersey costs their team ' + JERSEY_PTS + ' pts, taken at kickoff.' : 'Not a league game day, so the week is unknown — the deduction is applied as entered (' + JERSEY_PTS + ' pts per player).', dl };
+  }
+  const jerseyCounts = (game) => (game.jersey || [0, 0]).map((n) => Math.max(0, Math.min(10, Number(n) || 0)));
+
   function addLog(game, entry) { game.log.push({ t: Date.now(), stamp: stampOf(game), ...entry }); }
-  const LABEL = { td: 'Touchdown', conv2: '2-pt conversion', conv1: '1-pt conversion', conv0: 'Conversion no good', safety: 'Safety', ret2: '2-pt conversion return', adjust: 'Score adjusted', timeout: 'Time-out' };
+  const LABEL = { td: 'Touchdown', conv2: '2-pt conversion', conv1: '1-pt conversion', conv0: 'Conversion no good', safety: 'Safety', ret2: '2-pt conversion return', adjust: 'Score adjusted', jersey: 'Jersey penalty', timeout: 'Time-out' };
   function logLine(game, e) {
     const n = game.teams[e.team].name;
     const pts = e.pts > 0 ? '+' + e.pts : e.pts < 0 ? String(e.pts) : '—';
@@ -693,6 +720,14 @@
     });
     $('halfMin').value = game.halfMin;
     [0, 1].forEach((v) => $('gt' + v).setAttribute('aria-pressed', String(!!game.scrimmage === !!v)));
+    const jr = jerseyRule(game), jc = jerseyCounts(game);
+    [0, 1].forEach((i) => {
+      $('jl' + i).textContent = game.teams[i].name || ('Team ' + (i + 1));
+      $('jr' + i).className = 'jrow flag-' + game.teams[i].flag;
+      $('jersey' + i).value = String(jc[i]); $('jersey' + i).disabled = !jr.on;
+    });
+    $('jerseyWeek').value = String(jr.dl);
+    $('jerseyHint').textContent = jr.why + (jr.on && (jc[0] || jc[1]) ? ' Deduction: ' + [0, 1].filter((i) => jc[i]).map((i) => (game.teams[i].name || 'Team ' + (i + 1)) + ' −' + jc[i] * JERSEY_PTS).join(', ') + '.' : '');
     $('setupErr').textContent = '';
   }
 
@@ -704,6 +739,9 @@
     $('rKick').innerHTML = `<div><b>1st half:</b> ${esc(t[k].name)} kicks off, ${esc(t[other(k)].name)} receives</div>
       <div><b>2nd half:</b> ${esc(t[other(k)].name)} kicks off, ${esc(t[k].name)} receives</div>`;
     $('rScrim').hidden = !game.scrimmage;
+    const jc = jerseyCounts(game), jon = jerseyRule(game).on && (jc[0] || jc[1]);
+    $('rJersey').hidden = !jon;
+    if (jon) $('rJersey').innerHTML = '<div class="eyebrow">Jersey deduction</div>' + [0, 1].filter((i) => jc[i]).map((i) => `<div><b>${esc(t[i].name)}</b> starts at −${jc[i] * JERSEY_PTS} <span class="muted">(${jc[i]} player${jc[i] > 1 ? 's' : ''} without a jersey)</span></div>`).join('');
     $('rHalf').textContent = game.halfMin + '-minute halves · running clock · stop time in the last minute of the 2nd half when within 14';
   }
 
@@ -1262,7 +1300,13 @@
       game.clock.remaining = game.halfMin * 60000; game.status = 'ready'; S.settings.halfMin = game.halfMin;
       save(); clearTypingHistory(); renderReady(); show('ready');
     },
-    startGame() { clearTypingHistory(); unlockAudio(); const game = g(); game.status = 'live'; game.startedAt = Date.now(); startClock(game); save(); renderBoard(); show('board'); },
+    startGame() {
+      clearTypingHistory(); unlockAudio(); const game = g(); game.status = 'live'; game.startedAt = Date.now();
+      if (jerseyRule(game).on && !game.log.some((e) => e.type === 'jersey')) {
+        const jc = jerseyCounts(game);
+        [0, 1].forEach((i) => { if (jc[i]) { const pts = -JERSEY_PTS * jc[i]; game.teams[i].score += pts; addLog(game, { team: i, type: 'jersey', pts, players: jc[i] }); } });
+      }
+      startClock(game); save(); renderBoard(); show('board'); },
 
     toggleClock(d, force) {
       unlockAudio(); const game = g();
@@ -1363,7 +1407,8 @@
     },
     adj(d) {
       const game = g(); const i = Number(d.team); const dd = Number(d.d);
-      if (adjStaged[i] + dd < 0) return; adjStaged[i] += dd; $('adj' + i).textContent = adjStaged[i];
+      // can't go below 0 (or below a jersey deduction already taken)
+      if (adjStaged[i] + dd < Math.min(0, game.teams[i].score)) return; adjStaged[i] += dd; $('adj' + i).textContent = adjStaged[i];
       const diffs = [0, 1].map((k) => adjStaged[k] - game.teams[k].score);
       $('adjHint').textContent = diffs.every((x) => x === 0) ? 'Nothing changed yet. Tap ±1, then slide to apply.' : 'Pending: ' + [0, 1].filter((k) => diffs[k]).map((k) => game.teams[k].name + ' ' + (diffs[k] > 0 ? '+' : '') + diffs[k]).join(', ');
     },
@@ -1476,9 +1521,15 @@
     const el = e.target; if (!el || !el.id || !el.id.startsWith('fpNote')) return;
     const game = g(); if (!game) return; fairPlayOf(game)[Number(el.dataset.to)].note = el.value.slice(0, 200); save();
   });
+  document.addEventListener('change', (e) => {
+    const el = e.target; if (!el || !el.id) return; const game = g(); if (!game) return;
+    if (el.dataset.jersey !== undefined) { game.jersey = jerseyCounts(game); game.jersey[Number(el.dataset.jersey)] = Number(el.value) || 0; save(); renderSetup(); }
+    else if (el.id === 'jerseyWeek') { S.settings.jerseyWeek = Number(el.value) || 3; save(); renderSetup(); }
+  });
   document.addEventListener('input', (e) => {
     if (!e.target || !['name0', 'name1', 'halfMin'].includes(e.target.id)) return;
     readSetup(); save(); $('kick0').textContent = g().teams[0].name || 'Team 1'; $('kick1').textContent = g().teams[1].name || 'Team 2';
+    $('jl0').textContent = g().teams[0].name || 'Team 1'; $('jl1').textContent = g().teams[1].name || 'Team 2';
   });
   // iOS "Shake to Undo → Undo Typing" only appears while a text field still has typing history. Swapping the
   // setup inputs for fresh copies when the game starts wipes that history, so shaking the phone mid-game does nothing.

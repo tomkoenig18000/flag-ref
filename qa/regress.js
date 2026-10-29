@@ -183,3 +183,30 @@ console.log(out.join('\n'));
   let s = boot(); s.click('[data-act="newGame"]'); s.click('[data-act="setScrimmage"][data-v="1"]');
   P(s.state().current.scrimmage === true, 'scrimmage toggle on setup');
 }
+// v36: jersey deduction (-2 per player without a jersey, after the deadline week)
+{
+  const P = (c, m) => console.log((c ? 'PASS ' : 'FAIL ') + m);
+  const WK4 = Date.UTC(2026, 9, 20, 19, 0, 0);   // Tue Oct 20 2026 = Week 4
+  const J = (x, id) => x.document.getElementById(id);
+  let a = boot(); a.click('[data-act="newGame"]');   // harness default is Week 2
+  P(J(a, 'jersey0').disabled && /deadline/.test(J(a, 'jerseyHint').textContent), 'before the deadline the jersey menus are disabled with an explanation');
+  a.pick('jerseyWeek', 1);
+  P(!J(a, 'jersey0').disabled && a.state().settings.jerseyWeek === 1, 'deadline week is adjustable and enables the menus');
+  let b = quickGame(boot({ now: WK4 }), { jersey: [2, 1] });
+  { const c = b.state().current; P(c.teams[0].score === -4 && c.teams[1].score === -2 && c.log.length === 2 && c.log[0].type === 'jersey' && c.log[0].pts === -4, 'week 4: 2 players and 1 player without jerseys start at -4 and -2, logged'); }
+  b.click('[data-act="touchdown"][data-team="0"]'); b.slide('[data-slide="conv"][data-pts="1"]');
+  P(b.state().current.teams[0].score === 3, 'scoring continues from the deduction (-4 + 7)');
+  b.click('[data-act="menu"]'); b.click('[data-act="adjustScore"]'); b.click('[data-act="adj"][data-team="1"][data-d="-1"]');
+  P(J(b, 'adj1').textContent === '-2', 'adjust cannot push a deducted score lower');
+  let c = quickGame(boot({ now: WK4 }), { jersey: [0, 0] });
+  P(c.state().current.log.length === 0 && c.state().current.teams[0].score === 0, 'no jerseys missing = no deduction');
+  let d = boot({ now: WK4 }); d.click('[data-act="newGame"]'); d.pick('jersey0', 3); d.click('[data-act="setScrimmage"][data-v="1"]');
+  P(J(d, 'jersey0').disabled, 'scrimmage: jersey menus disabled');
+  d.type('name0', 'A'); d.type('name1', 'B'); d.click('#kick0'); d.click('[data-act="toReady"]'); d.click('[data-act="startGame"]');
+  P(d.state().current.teams[0].score === 0 && d.state().current.log.length === 0, 'scrimmage: no deduction applied');
+  let e = boot({ now: WK4 }); e.click('[data-act="newGame"]'); e.type('name0', 'A'); e.type('name1', 'B'); e.pick('jersey1', 2); e.click('#kick0'); e.click('[data-act="toReady"]');
+  P(!J(e, 'rJersey').hidden && /−4/.test(J(e, 'rJersey').textContent), 'ready screen shows the deduction');
+  e.click('[data-act="startGame"]'); e.click('[data-act="undo"]'); e.slide('[data-slide="undoConfirm"]');
+  P(e.state().current.teams[1].score === 0, 'undo removes a jersey deduction');
+  P([a, b, c, d, e].every((x) => x.errors().length === 0), 'no errors jersey');
+}

@@ -58,3 +58,7 @@ Home → New game → Setup (names, flag colours, who kicks off 1st half, half l
 - Setup has Regular / Scrimmage. `game.scrimmage` shows on the Ready screen, board pill, saved list, log title and share text.
 
 - Conversion sheet (after a touchdown) has a fourth slide, "<defense> return": the defending team gets 2, logged as `ret2`, the pending conversion is cleared (the TD team keeps its 6). Undoing it reopens the conversion choice.
+
+## v36 additions
+- Setup has "Players without a jersey" (0–10 per team) and a "Jersey deadline" week menu (default 3, kept in settings). Past the deadline (or on a non-league day / playoffs) each player without a jersey costs their team 2 pts, taken when the game starts: logged as `jersey` ("Jersey penalty", H1 20:00), so scores can start negative. On or before the deadline week, and in scrimmages, the menus are disabled and nothing is deducted.
+- The Ready screen lists the deduction. Undo can remove a jersey entry like any other. Adjust score can't go below 0, or below a deduction already taken.
