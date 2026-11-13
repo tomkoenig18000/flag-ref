@@ -360,7 +360,7 @@
       <svg viewBox="0 0 44 44" aria-hidden="true"><rect x="2" y="2" width="40" height="40" rx="10" fill="var(--surface2)"/><path d="M13 9v27" stroke="var(--ink)" stroke-width="3" stroke-linecap="round"/><path d="M15 10h16l-4 6 4 6H15z" fill="var(--yellow)"/><path d="M15 23h13l-3 5 3 5H15z" fill="var(--blue)"/></svg>
       <div><h1>Flag Ref</h1><div class="eyebrow">Point Grey Cup · UBC Rec</div></div>
     </div>
-    <button class="link" data-act="diagnostics" style="padding:4px 0">v37</button>
+    <button class="link" data-act="diagnostics" style="padding:4px 0">v38</button>
   </div>
   <button class="sync" id="sync" data-state="saving" data-act="diagnostics">Connecting to your account…</button>
   <div id="resumeWrap"></div>
@@ -526,7 +526,7 @@
      right away, failures are shown on the board, and a finished game is
      only cleared once the cloud has confirmed it. Clock state is
      timestamps, so a running clock never generates writes by itself. */
-  const VERSION = 37;
+  const VERSION = 38;
   // Inside the Claude viewer the page has window.claude and can use the account store;
   // as a standalone home-screen app (GitHub Pages) phone storage is first-party and durable.
   const IN_VIEWER = !!(window.claude && typeof window.claude.use === 'function');
@@ -807,7 +807,7 @@
     const within14 = Math.abs(game.teams[0].score - game.teams[1].score) <= 14;
     if (game.status === 'halftime') { status = 'Halftime'; sub = game.teams[other(game.kickoff)].name + ' kicks off · tap for the 2nd-half slide'; }
     else if (game.status === 'over') { status = 'Final'; sub = 'Open the menu to finish and save'; }
-    else if (isStopTime(game)) { state = 'stoptime'; status = run ? 'Stop time · running' : 'Stop time · stopped'; sub = run ? 'Within 14 — runs until the first stoppage, then stops on incompletions, out of bounds, first downs, scores.' : 'Within 14 — stopped. Start it again when play resumes.'; }
+    else if (isStopTime(game)) { state = 'stoptime'; status = run ? 'Stop time · running' : 'Stop time · stopped'; sub = run ? 'Within 14 — stops on incompletions, out of bounds, first downs, scores.' : 'Within 14 — stopped. Start it again when play resumes.'; }
     else if (ms <= 60000 && game.half === 2) { status = run ? 'Running' : 'Stopped'; pre = 'Clock runs — up by more than 14'; preKind = 'run'; }
     else {
       status = run ? 'Running' : (ms === game.halfMin * 60000 ? 'Tap to start' : 'Stopped');
@@ -1004,7 +1004,7 @@
 <li><b>No contact.</b> No blocking, no holding, no stripping the ball. Rushers get a clear straight lane to the QB.</li>
 <li><b>Fumbles are dead where they hit the ground</b> — nobody dives on anything. The offense keeps it. Exception: a <b>muffed kickoff or punt can be picked up and returned</b> unless the ref kills it for collision risk. A lateral caught in the air by the defense is live.</li>
 <li><b>3 downs to make 10 yards.</b> 20-second play clock from the whistle. No direct snap — QB is 3+ yards back.</li>
-<li><b>Rushing the QB:</b> Open — from the 10-yard rush line only. Women's/Mixed — after 5 steamboats. A hand-off ends the count.</li>
+<li><b>Rushing the QB:</b> Open — from the 10-yard rush line only. Women's/Mixed — after 5 steamboats (the QB just has to be able to hear the count). A hand-off ends the count.</li>
 <li><b>Inside the 5, the ball has to be thrown</b> — no hand-offs, no QB runs. 5 yards and loss of down.</li>
 <li><b>Catch = control with one foot in bounds.</b> <b>Down = anything but a foot touches the ground</b>, including a hand — but the <b>ball</b> touching the ground doesn't down a carrier who still has control.</li>
 <li><b>Scoring:</b> TD 6 · convert 1 from the 5 (pass) or 2 from the 10 (run or pass) · safety 2. A convert picked off and returned is 2 the other way.</li>
@@ -1032,10 +1032,10 @@
 <details><summary>Timing &amp; stop time</summary><div class="body"><ul>
 <li><b>Two 20-minute halves,</b> running clock. <b>Halves can be shortened to finish inside the hour</b> — finishing on time is a big focus this year. Set the half length on the setup screen before kickoff.</li>
 <li><b>Stop time: last minute of the 2nd half only, and only if the differential is 14 or less</b> (and time permits). Then the clock stops on: touchdown · ball out of bounds · time-outs (team or official) · penalties · incomplete pass · injury · until the ref has placed the markers.</li>
-<li><b>The clock doesn't stop at 1:00 by itself.</b> It keeps running until the <b>first stoppage</b> (incompletion, out of bounds, score, penalty, time-out…) at or after 1:00, and only then does stop time apply — so it can run a while before the first stop.</li>
+<li><b>The clock stops itself at exactly 1:00, like a two-minute warning</b> (within 14). Start it again on the ref's whistle; stop time applies from there. Up by more than 14 at 1:00: no stop, the clock runs.</li>
 <li>In stop time, an <b>offensive penalty runs 10 seconds off</b>; an offensive penalty in the <b>last 10 seconds ends the game</b>. <b>The defence may decline the run-off</b> and take just the yardage.</li>
 <li>A half doesn't end until the ball is dead and penalties are resolved. <b>TD on the last play of either half → the convert is still played</b> at 0:00.</li>
-<li><b>Time-outs:</b> one 30-second time-out per team per half; they don't carry over. The app has a Time-out button under each team's score — it stops the clock.</li>
+<li><b>Time-outs:</b> one 30-second time-out per team per half; they don't carry over. The app has a Time-out button under each team's score — it stops the clock. <b>An improper time-out (none left, etc.) is 5 yards if it causes a delay</b>; if it holds nothing up, no penalty.</li>
 <li>Officials may shorten or abandon games for scheduling or safety.</li>
 <div class="house"><em>How we call it</em> <b>Stop a running clock only for a major delay</b> — a significant injury, the ball stuck in a bush or on a roof. Substitutions, ordinary time-wasting and quick injuries don't stop it.</div>
 <div class="house"><em>How we call it</em> <b>A time-out always stops the clock</b>, running time or not — that's the only reason anyone calls one.</div>
@@ -1079,8 +1079,8 @@
 
 <details><summary>Rushing the passer</summary><div class="body"><ul>
 <li><b>Open divisions:</b> only players who start the play behind the <b>rush line, 10 yards off the line of scrimmage</b>, may rush the snap-taker. Once the snap-taker crosses the line, laterals or hands off, anyone can play the ball.</li>
-<li><b>Women's and Mixed divisions:</b> rushers go after <b>5 steamboats</b>.</li>
-<li>Rushers must be given a <b>clear straight path</b> to the QB; an offensive player who obstructs the rusher is blocking (10 yd).</li>
+<li><b>Women's and Mixed divisions:</b> rushers go after <b>5 steamboats</b>. <div class="house"><em>How we call it</em> <b>The rusher doesn't have to be the one counting</b> — the QB just needs to be able to hear the count.</div></li>
+<li>Rushers must be given a <b>clear straight path</b> to the QB; an offensive player who obstructs the rusher is blocking: <b>replay the down from the previous spot</b> (10 yd). Any other block is a different penalty — see Penalties.</li>
 <li>Illegal rushing: 5 yards.</li>
 </ul></div></details>
 
@@ -1094,7 +1094,7 @@
 
 <details><summary>Penalties</summary><div class="body">
 <h4>5 yards</h4><ul>
-<li>Delay of game / time count · Illegal snap</li>
+<li>Delay of game / time count · Illegal snap · <b>Improper time-out that causes a delay</b></li>
 <li>Encroachment · False start · Offside</li>
 <li>Illegal substitution · Illegal rushing</li>
 <li>Kicking the ball forward (from the spot)</li>
@@ -1103,21 +1103,23 @@
 <h4>5 yards + loss of down</h4><ul>
 <li><b>Illegal forward pass</b> (from the spot of the pass) · <b>Intentional grounding</b></li>
 <li><b>Illegal touching</b> (normal play, <b>zero yards</b>) — a receiver who stepped out of bounds and came back in is first to touch a forward pass, unless a defender forced them out and they came straight back. Loss of down only. <b>On a kick or punt it is 5 yards from the spot of the foul</b> (no loss of down). See Scrimmage &amp; possession.</li>
+<li><b>Blocking (not the rusher)</b> — a spot foul: <b>5 yards from the spot of the block + loss of down</b>, like a ball-carrier foul. (Blocking the rusher is the 10-yard replay below.)</li>
 <li><b>Illegal run inside the 5</b> — a hand-off or QB scramble inside the 5 (the book's "rush penalty")</li>
 <li><b>Ball-carrier fouls</b> — <b>flag guarding</b> (hand/arm or ball over the belt, dropping a shoulder to cover the flag) · <b>spinning</b> · <b>hurdling or leaping</b> · lowering the head or shoulder. Any ball-carrier infraction is 5 and loss of down.</li>
 <div class="house"><em>How we call it</em> <b>Ball-carrier fouls are spot fouls, assessed from the end of the run.</b> Let the play finish, then mark 5 back from where the carrier was downed. If the run crossed the first-down marker it is <b>still a first down: 1st &amp; 10 from the new spot</b>, 5 back from the end of the run (the loss of down doesn't matter — the series is over anyway).</div>
 </ul>
 <h4>10 yards</h4><ul>
+<div class="house"><em>How we call it</em> <b>Every 10-yard penalty on the defense is an automatic first down</b> (not just DPI and roughing). Offensive 10-yarders aren't.</div>
 <li><b>Offensive pass interference (loss of down)</b></li>
 <li><b>Defensive pass interference — 10 yards from the previous spot + automatic first down.</b> Not a spot foul. No PI if the ball is uncatchable, or after any eligible receiver has touched it. Tangled feet alone isn't PI; tripping from behind is; face-guarding is. Incidental contact while both play the ball is not PI.</li>
 <div class="house"><em>How we call it</em> <b>Ripping at the ball on a catch:</b> while the receiver is still bobbling it or hasn't secured it, the defender may play the ball — brushing the hands or arm on the way in is fine, as long as they aren't early. <b>Once the receiver has control it's a catch,</b> and any further ripping or excessive contact is <b>unnecessary roughness</b>. Arriving before the ball is PI.</div>
-<li>Holding (grasping/encircling) · Illegal use of hands · Illegal contact · Blocking · Clipping · Tripping · Pyramiding (using a teammate to get height)</li>
+<li>Holding (grasping/encircling) · Illegal use of hands · Illegal contact · Blocking <b>the rusher</b> (from the previous spot, replay the down) · Clipping · Tripping · Pyramiding (using a teammate to get height)</li>
 <li><b>Roughing the passer (automatic first down)</b> · Contacting the kicker (not if pushed into them by the kicking team, or slight incidental contact on a block attempt)</li>
 <li>Unsportsmanlike conduct · Obstruction/interference · Personal foul · Unnecessary roughness · Illegal equipment · Illegally secured flag belt</li>
 </ul></div></details>
 
 <details><summary>Enforcement &amp; ejections</summary><div class="body"><ul>
-<li><b>Running play:</b> mark off from the end of the run — except an offensive foul behind the end of the run, marked from the spot of the foul. Ball-carrier fouls (flag guarding, spinning, hurdling) and stripping are enforced from the end of the run; a run past the marker is still a first down, 1st &amp; 10.</li>
+<li><b>Running play:</b> mark off from the end of the run — except an offensive foul behind the end of the run, marked from the spot of the foul. Ball-carrier fouls (flag guarding, spinning, hurdling) and stripping are enforced from the end of the run; a block away from the rusher is marked from the spot of the block; a run past the marker is still a first down, 1st &amp; 10.</li>
 <li><b>Ball in flight:</b> from the previous spot.</li>
 <li><b>Half the distance</b> when a 10-yard penalty would be inside the offender's 20, or a 5-yard penalty inside their 10.</li>
 <li><b>Double foul</b> (both teams, no change of possession): net the yardage and replay the down at the new spot.</li>
@@ -1263,8 +1265,11 @@
       const st = isStopTime(game);
       const key = game.id + ':' + game.half;
       if (!game.warned) {
-        game.warned = true; save(); stopKey = key; stopActive = st;
-        if (st) { beep(WARN); showAlert('stop', 'Last minute', 'Stop time', 'Within 14 — stop the clock on incompletions, out of bounds, first downs and scores.', 6000); }
+        game.warned = true; stopKey = key; stopActive = st;
+        // two-minute-warning style: within 14, the clock stops itself at exactly 1:00 (only if it just ran across it)
+        if (st && running(game) && game.halfMin > 1 && ms > 55000) { game.clock.remaining = 60000; game.clock.since = null; }
+        save();
+        if (st) { beep(WARN); showAlert('stop', 'Last minute', 'Stop time', 'Clock stopped at 1:00 (like a 2-minute warning). Start it on the whistle; then stop on incompletions, out of bounds, first downs and scores.', 6000); }
         else { beep(WARN); showAlert('run', 'Last minute', 'Clock runs', 'Up by more than 14 — no stop time.', 4000); }
       } else if (stopKey !== key) { stopKey = key; stopActive = st; }
       else if (stopActive !== st) {

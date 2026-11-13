@@ -28,7 +28,7 @@ Home → New game → Setup (names, flag colours, who kicks off 1st half, half l
 
 ## Stop time (2nd half only)
 - From 3:00 in the 2nd half a pill says "Stop time at 1:00 — within 14" or "Clock runs at 1:00 — up by more than 14".
-- Crossing 1:00 while running: warned=true, full-screen alert ("Stop time" if |diff| ≤ 14 else "Clock runs"), auto-hides.
+- Crossing 1:00 while running within 14: the clock stops itself at exactly 1:00 (two-minute-warning style); up by >14 it keeps running. Either way warned=true, full-screen alert ("Stop time" if |diff| ≤ 14 else "Clock runs"), auto-hides.
 - Under 1:00: clock block state is "stoptime" when |diff| ≤ 14 (amber running / red stopped) else normal with "Clock runs" pill.
 - If the differential crosses 14 during the last minute, an alert fires ("Stop time on"/"Stop time off") and the state flips. It must not fire repeatedly without a change.
 - Alert must not fire on relaunch of a game whose warned flag is already true.

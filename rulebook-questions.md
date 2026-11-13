@@ -22,6 +22,12 @@ the goal line (5 — not asked). Ask in person.
 - **Ball-carrier fouls are spot fouls assessed from the end of the run.** A run that crossed
   the marker is still a first down: **1st & 10 from the new spot**, 5 back from the end of
   the run (Caden by email).
+- **Settled with Caden (Nov 13, 2026):** improper time-out = 5 yd only if it causes a delay · every
+  defensive 10-yard penalty is an automatic first down · **stop time starts with the clock stopping at
+  exactly 1:00, like a two-minute warning** (within 14) · steamboats: the QB just has to hear the count
+  (the rusher needn't count) · blocking the rusher = replay the down from the previous spot; any other
+  block = 5 yd from the spot of the block + loss of down. Ball touching the ground doesn't down a
+  carrier who still has control; any fumble is dead.
 - **Fair play ratings are happening** (confirmed after the email — Caden hadn't heard of
   them at training and checked with Keelie). The app requires both before a game can be
   finished; keep it that way.
