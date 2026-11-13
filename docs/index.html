@@ -360,7 +360,7 @@
       <svg viewBox="0 0 44 44" aria-hidden="true"><rect x="2" y="2" width="40" height="40" rx="10" fill="var(--surface2)"/><path d="M13 9v27" stroke="var(--ink)" stroke-width="3" stroke-linecap="round"/><path d="M15 10h16l-4 6 4 6H15z" fill="var(--yellow)"/><path d="M15 23h13l-3 5 3 5H15z" fill="var(--blue)"/></svg>
       <div><h1>Flag Ref</h1><div class="eyebrow">Point Grey Cup · UBC Rec</div></div>
     </div>
-    <button class="link" data-act="diagnostics" style="padding:4px 0">v36</button>
+    <button class="link" data-act="diagnostics" style="padding:4px 0">v37</button>
   </div>
   <button class="sync" id="sync" data-state="saving" data-act="diagnostics">Connecting to your account…</button>
   <div id="resumeWrap"></div>
@@ -526,7 +526,7 @@
      right away, failures are shown on the board, and a finished game is
      only cleared once the cloud has confirmed it. Clock state is
      timestamps, so a running clock never generates writes by itself. */
-  const VERSION = 36;
+  const VERSION = 37;
   // Inside the Claude viewer the page has window.claude and can use the account store;
   // as a standalone home-screen app (GitHub Pages) phone storage is first-party and durable.
   const IN_VIEWER = !!(window.claude && typeof window.claude.use === 'function');
@@ -1006,7 +1006,7 @@
 <li><b>3 downs to make 10 yards.</b> 20-second play clock from the whistle. No direct snap — QB is 3+ yards back.</li>
 <li><b>Rushing the QB:</b> Open — from the 10-yard rush line only. Women's/Mixed — after 5 steamboats. A hand-off ends the count.</li>
 <li><b>Inside the 5, the ball has to be thrown</b> — no hand-offs, no QB runs. 5 yards and loss of down.</li>
-<li><b>Catch = control with one foot in bounds.</b> <b>Down = anything but a foot touches the ground</b>, including a hand.</li>
+<li><b>Catch = control with one foot in bounds.</b> <b>Down = anything but a foot touches the ground</b>, including a hand — but the <b>ball</b> touching the ground doesn't down a carrier who still has control.</li>
 <li><b>Scoring:</b> TD 6 · convert 1 from the 5 (pass) or 2 from the 10 (run or pass) · safety 2. A convert picked off and returned is 2 the other way.</li>
 <li><b>Kickoff out of bounds → receivers' ball at their 15.</b> Kickoffs from the kicker's 15; you can punt on any down.</li>
 <li><b>Clock:</b> two 20-minute halves (shorter if we need to finish on time), running, plus stop time in the last minute of the game if it's within 14. One 30-second time-out per half; it stops the clock.</li>
@@ -1064,6 +1064,7 @@
 <li><b>Illegal forward pass</b> (play dead, 5 yd + loss of down from the spot): passer's entire body past the line · after a change of possession · second forward pass in a down · passer catches own untouched pass · any forward pass on a return play · thrown away behind the line to avoid loss (intentional grounding).</li>
 <li><b>Catch = control with one foot in bounds.</b> No two-feet or survive-the-ground test (not NFL rules). Receiver carried out mid-air by contact = complete, spotted where the ball was.</li>
 <li><b>Down:</b> any part of the body other than the feet touches the ground — <b>a hand counts</b> (not NFL rules).</li>
+<div class="house"><em>How we call it</em> <b>The ball touching the ground doesn't down the carrier.</b> If the carrier still has control of the ball (like college), only their body can down them — the ball scraping the turf is nothing. <b>Control is the test:</b> once the ball comes loose it's a fumble, and every fumble is dead where it lands.</div>
 <li><b>Out of bounds, then back in:</b> a receiver who steps out of bounds and comes back in <b>can't be the first to touch a forward pass</b> — a teammate or a defender has to touch it first. Doesn't apply if a defender <b>forced</b> them out and they come straight back in. Same idea in college and the NFL; no penalty if a defender touches it first.
 <div class="house"><em>How we call it</em> <b>Illegal touching on a normal play: loss of down, zero yards</b> (the pass is incomplete and the down counts). <b>On a kick or punt: 5 yards from the spot of the foul.</b> (Caden; matches the NFL.)</div></li>
 <li><b>Inside the 5:</b> no hand-offs, no QB scrambles. <b>Illegal run: 5 yards and loss of down</b> (the book calls it a "rush penalty"; loss of down settled at training).</li>
