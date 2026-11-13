@@ -10,7 +10,7 @@ a.click('[data-act="newGame"]'); a.slide('[data-slide="newGameConfirm"]'); ok('c
 // 2 cancel on setup discards the half-made game
 a.type('name0', 'Half'); a.click('[data-act="goHome"]'); ok('cancel discards setup game', a.state().current === null && a.screen() === 'home');
 // 3 delete by id removes the right game
-a = boot(); for (const n of ['One','Two','Three']) { a = quickGame(a, { a: n, b: 'X' }); a.advance(40*60000); a.slide('[data-slide="startHalf2"]'); a.advance(20*60000 + 500); fpFinish(a); a.advance(1000); }
+a = boot(); for (const n of ['One','Two','Three']) { a = quickGame(a, { a: n, b: 'X' }); a.advance(40*60000); a.slide('[data-slide="startHalf2"]'); a.advance(19*60000 + 500); a.click('#clock'); a.advance(60500); fpFinish(a); a.advance(1000); }
 const two = a.state().games.find(g => g.teams[0].name === 'Two');
 a.click(`[data-act="viewGame"][data-id="${two.id}"]`); a.click('[data-act="deleteSaved"]'); a.slide('[data-slide="deleteSavedConfirm"]');
 ok('deleted exactly Two', a.state().games.map(g => g.teams[0].name).join(',') === 'Three,One', a.state().games.map(g => g.teams[0].name));
@@ -34,7 +34,7 @@ ok('banner after conversion', /Halftime/.test(a.modal()||'') && a.scores()[1] ==
 // 8 rules from setup preserve inputs (harness now picks visible button)
 a = boot(); a.click('[data-act="newGame"]'); a.type('name0','Keep'); a.click('[data-act="rules"]'); ok('rules opens from setup', /Quick rules/.test(a.modal()||'')); a.click('[data-act="close"]'); ok('setup input kept', a.document.getElementById('name0').value === 'Keep');
 // 9 full game + relaunch still fine, no errors
-a = quickGame(boot()); a.advance(40*60000); a.slide('[data-slide="startHalf2"]'); a.advance(20*60000 + 500); fpFinish(a); const b = a.relaunch();
+a = quickGame(boot()); a.advance(40*60000); a.slide('[data-slide="startHalf2"]'); a.advance(19*60000 + 500); a.click('#clock'); a.advance(60500); fpFinish(a); const b = a.relaunch();
 ok('relaunch home with 1 game', b.screen() === 'home' && b.state().games.length === 1);
 ok('no errors', a.errors().length === 0 && b.errors().length === 0, a.errors().concat(b.errors()));
 console.log(out.join('\n'));
@@ -46,7 +46,7 @@ console.log(out.join('\n'));
   c.click('[data-act="close"]'); const reopened = c.modal() !== null;
   console.log((first && !reopened ? 'PASS' : 'FAIL') + ' no spurious banner reopen — ' + JSON.stringify([first, reopened]));
   // finish without cloud queues the game for upload and persists that
-  let d = quickGame(boot()); d.advance(40*60000); d.slide('[data-slide="startHalf2"]'); d.advance(20*60000 + 500); fpFinish(d);
+  let d = quickGame(boot()); d.advance(40*60000); d.slide('[data-slide="startHalf2"]'); d.advance(19*60000 + 500); d.click('#clock'); d.advance(60500); fpFinish(d);
   const st = d.state(); console.log((st.unsyncedGames.length === 1 && st.games[0].id === st.unsyncedGames[0] ? 'PASS' : 'FAIL') + ' finish queued for upload — ' + JSON.stringify(st.unsyncedGames));
   console.log((d.errors().length + c.errors().length === 0 ? 'PASS' : 'FAIL') + ' no errors r2');
 }
@@ -64,7 +64,12 @@ console.log(out.join('\n'));
   // stop time: tap stops directly, no slider
   e.advance(20*60000); e.slide('[data-slide="startHalf2"]'); e.advance(19*60000+5000); e.click('[data-act="hideAlert"]');
   console.log((e.document.getElementById('stopSlide').hidden && e.clockState().state === 'stoptime' ? 'PASS' : 'FAIL') + ' no slider in stop time');
+  console.log((e.state().current.clock.since === null && e.state().current.clock.remaining === 60000 ? 'PASS' : 'FAIL') + ' clock auto-stopped at exactly 1:00 (within 14)');
+  e.click('#clock'); console.log((e.state().current.clock.since !== null ? 'PASS' : 'FAIL') + ' tap restarts after the 1:00 stop');
   e.click('#clock'); console.log((e.state().current.clock.since === null ? 'PASS' : 'FAIL') + ' tap stops in stop time');
+  { let u = quickGame(boot()); u.click('[data-act="touchdown"][data-team="1"]'); u.slide('[data-slide="conv"][data-pts="2"]'); u.click('[data-act="touchdown"][data-team="1"]'); u.slide('[data-slide="conv"][data-pts="2"]'); u.click('[data-act="touchdown"][data-team="1"]'); u.slide('[data-slide="conv"][data-pts="2"]');
+    u.advance(20*60000); u.slide('[data-slide="startHalf2"]'); u.advance(19*60000+5000);
+    console.log((u.state().current.clock.since !== null ? 'PASS' : 'FAIL') + ' up by more than 14: clock runs through 1:00'); }
   console.log((e.errors().length === 0 ? 'PASS' : 'FAIL') + ' no errors slide');
 }
 // v14: staged adjustments, undo sheet, halftime slide
