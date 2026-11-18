@@ -297,6 +297,7 @@
   .log div { display: grid; grid-template-columns: 74px 1fr auto; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--line); }
   .log .t { font-family: var(--display); font-weight: 600; color: var(--muted); font-variant-numeric: tabular-nums; }
   .log .p { font-family: var(--display); font-weight: 800; }
+  .ic { width: 24px; height: 24px; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
   .menu .btn { justify-content: flex-start; font-size: 20px; min-height: 54px; }
   .adj { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
   .adj .box { background: var(--surface); border-radius: 14px; padding: 12px; display: flex; flex-direction: column; align-items: center; gap: 8px; }
@@ -332,12 +333,12 @@
       <svg viewBox="0 0 44 44" aria-hidden="true"><rect x="2" y="2" width="40" height="40" rx="10" fill="var(--surface2)"/><path d="M13 9v27" stroke="var(--ink)" stroke-width="3" stroke-linecap="round"/><path d="M15 10h16l-4 6 4 6H15z" fill="var(--yellow)"/><path d="M15 23h13l-3 5 3 5H15z" fill="var(--blue)"/></svg>
       <div><h1>Flag Ref</h1><div class="eyebrow">Point Grey Cup · UBC Rec</div></div>
     </div>
-    <button class="link" data-act="diagnostics" style="padding:4px 0">v38</button>
+    <button class="link" data-act="diagnostics" style="padding:4px 0">v39</button>
   </div>
   <button class="sync" id="sync" data-state="saving" data-act="diagnostics">Connecting to your account…</button>
   <div id="resumeWrap"></div>
   <button class="btn primary huge" data-act="newGame">New game</button>
-  <button class="btn" data-act="rules">Quick rules</button>
+  <button class="btn" data-act="rules"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h10a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M5 17a3 3 0 0 1 3-3h10"/></svg>Quick rules</button>
   <div class="eyebrow" style="margin-top:8px">Past games</div>
   <div class="gamelist" id="gamelist"></div>
 </section>
@@ -498,7 +499,7 @@
      right away, failures are shown on the board, and a finished game is
      only cleared once the cloud has confirmed it. Clock state is
      timestamps, so a running clock never generates writes by itself. */
-  const VERSION = 38;
+  const VERSION = 39;
   // Inside the Claude viewer the page has window.claude and can use the account store;
   // as a standalone home-screen app (GitHub Pages) phone storage is first-party and durable.
   const IN_VIEWER = !!(window.claude && typeof window.claude.use === 'function');
@@ -617,6 +618,27 @@
   function isStopTime(game) { return game.half === 2 && remainingMs(game) <= 60000 && Math.abs(game.teams[0].score - game.teams[1].score) <= 14; }
   function shortDate(ts) { return new Date(ts).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' }); }
   function shortTime(ts) { return new Date(ts).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' }); }
+  // line icons for menu rows (inline SVG, currentColor, so they follow the theme)
+  const ICONS = {
+    score: '<path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/>',
+    clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+    log: '<path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/>',
+    book: '<path d="M5 4h10a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M5 17a3 3 0 0 1 3-3h10"/>',
+    stop: '<rect x="6" y="6" width="12" height="12" rx="2"/>',
+    play: '<path d="M8 5v14l11-7z"/>',
+    check: '<path d="M5 13l4 4L19 7"/>',
+    share: '<path d="M12 15V3M8 7l4-4 4 4"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/>',
+    lock: '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
+    pulse: '<path d="M3 12h4l3-8 4 16 3-8h4"/>',
+    home: '<path d="M4 11l8-7 8 7"/><path d="M6 10v10h12V10"/>',
+    xcircle: '<circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/>',
+    trash: '<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>',
+    cloud: '<path d="M7 18a4 4 0 0 1-.5-8A6 6 0 0 1 18 9a4.5 4.5 0 0 1 0 9z"/>',
+    copy: '<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/>',
+    download: '<path d="M12 4v12M8 12l4 4 4-4M5 20h14"/>',
+    refresh: '<path d="M20 11a8 8 0 0 0-14-4L4 9M4 4v5h5M4 13a8 8 0 0 0 14 4l2-2M20 20v-5h-5"/>'
+  };
+  const ic = (n) => '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true">' + ICONS[n] + '</svg>';
   function esc(s) { return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
 
   /* League weeks. UBC Rec's fall 2026 calendar: first week of play Sep 26,
@@ -865,7 +887,7 @@
       <div class="err" id="finishErr"></div>
       <div class="stack" id="finishWrap">
         ${complete ? slideHtml('finish', 'Slide to save &amp; finish') : '<div class="hint" style="text-align:center">Enter both fair play scores to finish. <button class="link" data-act="finishWithoutFP" style="display:inline;padding:0">Finish without them</button></div>'}
-        <button class="btn" data-act="share">Share score</button>
+        <button class="btn" data-act="share">${ic('share')}Share score</button>
       </div>
       <div class="row"><button class="link" data-act="close">Not yet — still playing</button><button class="link" data-act="adjustClockRevive">Set the clock instead</button></div>`);
   }
@@ -884,18 +906,18 @@
     const game = g();
     openModal(`<div class="eyebrow">Game menu</div>
       <div class="stack menu">
-        <button class="btn" data-act="adjustScore">Adjust score</button>
-        <button class="btn" data-act="adjustClock">Set clock</button>
-        <button class="btn" data-act="showLog">Scoring log</button>
-        <button class="btn" data-act="rules">Quick rules</button>
-        ${game.status === 'live' ? `<button class="btn" data-act="endHalf">${game.half === 1 ? 'End 1st half now' : 'End game now'}</button>` : ''}
-        ${game.status === 'halftime' ? '<button class="btn" data-act="halftimeModal">Start 2nd half</button>' : ''}
-        ${game.status === 'over' ? '<button class="btn primary" data-act="finalModal">Finish &amp; save</button>' : ''}
-        <button class="btn" data-act="share">Share score</button>
-        <button class="btn" data-act="lockScreen">Lock screen score: ${S.settings.lockScreen ? 'on' : 'off'}</button>
-        <button class="btn" data-act="diagnostics">Diagnostics &amp; backup</button>
-        <button class="btn ghost" data-act="goHome">Back to home (keeps game)</button>
-        <button class="btn ghost" style="color:var(--danger);border-color:var(--danger)" data-act="abandon">Abandon game</button>
+        <button class="btn" data-act="adjustScore">${ic('score')}Adjust score</button>
+        <button class="btn" data-act="adjustClock">${ic('clock')}Set clock</button>
+        <button class="btn" data-act="showLog">${ic('log')}Scoring log</button>
+        <button class="btn" data-act="rules">${ic('book')}Quick rules</button>
+        ${game.status === 'live' ? `<button class="btn" data-act="endHalf">${ic('stop')}${game.half === 1 ? 'End 1st half now' : 'End game now'}</button>` : ''}
+        ${game.status === 'halftime' ? `<button class="btn" data-act="halftimeModal">${ic('play')}Start 2nd half</button>` : ''}
+        ${game.status === 'over' ? `<button class="btn primary" data-act="finalModal">${ic('check')}Finish &amp; save</button>` : ''}
+        <button class="btn" data-act="share">${ic('share')}Share score</button>
+        <button class="btn" data-act="lockScreen">${ic('lock')}Lock screen score: ${S.settings.lockScreen ? 'on' : 'off'}</button>
+        <button class="btn" data-act="diagnostics">${ic('pulse')}Diagnostics &amp; backup</button>
+        <button class="btn ghost" data-act="goHome">${ic('home')}Back to home (keeps game)</button>
+        <button class="btn ghost" style="color:var(--danger);border-color:var(--danger)" data-act="abandon">${ic('xcircle')}Abandon game</button>
       </div>
       <button class="link" data-act="close">Close</button>`);
   }
@@ -955,8 +977,8 @@
     const game = S.games.find((x) => x.id === id); if (!game) { renderHome(); return; }
     logModal(game, {
       title: (game.scrimmage ? 'Scrimmage · ' : '') + shortDate(game.endedAt || game.createdAt) + ' · ' + shortTime(game.endedAt || game.createdAt),
-      footer: `<div class="stack"><button class="btn primary" data-act="shareSaved" data-id="${esc(id)}">Share score</button>
-        <button class="btn ghost" data-act="deleteSaved" data-id="${esc(id)}" style="color:var(--danger);border-color:var(--danger)">Delete</button>
+      footer: `<div class="stack"><button class="btn primary" data-act="shareSaved" data-id="${esc(id)}">${ic('share')}Share score</button>
+        <button class="btn ghost" data-act="deleteSaved" data-id="${esc(id)}" style="color:var(--danger);border-color:var(--danger)">${ic('trash')}Delete</button>
         <button class="link" data-act="close">Close</button></div>`
     });
   }
@@ -973,15 +995,15 @@
 <li><b>A pulled flag is the tackle.</b> Defender holds the flag up at the spot. Only the ball carrier can be deflagged. If a flag falls off on its own, it's a one-hand touch instead.</li>
 <li><b>Flags always on the outside of clothing</b> — nothing covering the belt or flags.</li>
 <li><b>No flag guarding</b> — no arm, hand or ball over the belt, no dropping a shoulder. <b>No spinning, hurdling or leaping</b> to avoid a defender (QBs too — see Spinning), no lowering the head. All of these: 5 yards and loss of down.</li>
-<li><b>No contact.</b> No blocking, no holding, no stripping the ball. Rushers get a clear straight lane to the QB.</li>
-<li><b>Fumbles are dead where they hit the ground</b> — nobody dives on anything. The offense keeps it. Exception: a <b>muffed kickoff or punt can be picked up and returned</b> unless the ref kills it for collision risk. A lateral caught in the air by the defense is live.</li>
+<li><b>No contact.</b> No blocking, no holding, no stripping the ball. Rushers get a clear straight lane to the QB (blocking the rusher: replay the down, 10 yd; any other block: 5 yd + loss of down).</li>
+<li><b>Fumbles are dead where they hit the ground</b> — nobody dives on anything. The offense keeps it (the down still counts). Exception: a <b>muffed kickoff or punt can be picked up and returned</b> unless the ref kills it for collision risk. A lateral caught in the air by the defense is live.</li>
 <li><b>3 downs to make 10 yards.</b> 20-second play clock from the whistle. No direct snap — QB is 3+ yards back.</li>
 <li><b>Rushing the QB:</b> Open — from the 10-yard rush line only. Women's/Mixed — after 5 steamboats (the QB just has to be able to hear the count). A hand-off ends the count.</li>
 <li><b>Inside the 5, the ball has to be thrown</b> — no hand-offs, no QB runs. 5 yards and loss of down.</li>
 <li><b>Catch = control with one foot in bounds.</b> <b>Down = anything but a foot touches the ground</b>, including a hand — but the <b>ball</b> touching the ground doesn't down a carrier who still has control.</li>
 <li><b>Scoring:</b> TD 6 · convert 1 from the 5 (pass) or 2 from the 10 (run or pass) · safety 2. A convert picked off and returned is 2 the other way.</li>
 <li><b>Kickoff out of bounds → receivers' ball at their 15.</b> Kickoffs from the kicker's 15; you can punt on any down.</li>
-<li><b>Clock:</b> two 20-minute halves (shorter if we need to finish on time), running, plus stop time in the last minute of the game if it's within 14. One 30-second time-out per half; it stops the clock.</li>
+<li><b>Clock:</b> two 20-minute halves (shorter if we need to finish on time), running. If it's within 14 the clock stops itself at 1:00 of the 2nd half and stop time applies from there. One 30-second time-out per team per half; it stops the clock.</li>
 <li>Mixed: max 3 self-identifying males on the field. Need 5 to start, 6 max, can finish with 4.</li>
 </ul></div></details>
 
@@ -1005,11 +1027,11 @@
 <li><b>Two 20-minute halves,</b> running clock. <b>Halves can be shortened to finish inside the hour</b> — finishing on time is a big focus this year. Set the half length on the setup screen before kickoff.</li>
 <li><b>Stop time: last minute of the 2nd half only, and only if the differential is 14 or less</b> (and time permits). Then the clock stops on: touchdown · ball out of bounds · time-outs (team or official) · penalties · incomplete pass · injury · until the ref has placed the markers.</li>
 <li><b>The clock stops itself at exactly 1:00, like a two-minute warning</b> (within 14). Start it again on the ref's whistle; stop time applies from there. Up by more than 14 at 1:00: no stop, the clock runs.</li>
-<li>In stop time, an <b>offensive penalty runs 10 seconds off</b>; an offensive penalty in the <b>last 10 seconds ends the game</b>. <b>The defence may decline the run-off</b> and take just the yardage.</li>
+<li>In stop time, an <b>offensive penalty runs 10 seconds off</b>; an offensive penalty in the <b>last 10 seconds ends the game</b>. <b>The defense may decline the run-off</b> and take just the yardage.</li>
 <li>A half doesn't end until the ball is dead and penalties are resolved. <b>TD on the last play of either half → the convert is still played</b> at 0:00.</li>
 <li><b>Time-outs:</b> one 30-second time-out per team per half; they don't carry over. The app has a Time-out button under each team's score — it stops the clock. <b>An improper time-out (none left, etc.) is 5 yards if it causes a delay</b>; if it holds nothing up, no penalty.</li>
 <li>Officials may shorten or abandon games for scheduling or safety.</li>
-<div class="house"><em>How we call it</em> <b>Stop a running clock only for a major delay</b> — a significant injury, the ball stuck in a bush or on a roof. Substitutions, ordinary time-wasting and quick injuries don't stop it.</div>
+<div class="house"><em>How we call it</em> <b>Outside stop time, stop a running clock only for a major delay</b> — a significant injury, the ball stuck in a bush or on a roof. Substitutions, ordinary time-wasting and quick injuries don't stop it. (In stop time the clock-stoppers listed above apply instead.)</div>
 <div class="house"><em>How we call it</em> <b>A time-out always stops the clock</b>, running time or not — that's the only reason anyone calls one.</div>
 <div class="house"><em>How we call it</em> <b>The clock never runs during a convert in stop time.</b> Stop it on the touchdown; start it again on the kickoff.</div>
 <div class="house"><em>How we call it</em> We don't add time back after the fact (rulebook 4c allows it "when possible"; in practice, never) — stop the clock during the delay instead.</div>
@@ -1030,10 +1052,10 @@
 <li><b>3 downs to make 10 yards.</b></li>
 <li><b>20-second play clock</b> from the ref's whistle blowing the ball in → delay of game (5 yd).</li>
 <li><b>No direct snap.</b> The player taking the snap must be at least <b>3 yards</b> behind the snapper.</li>
-<li><b>Fumbles and backward passes are dead when they hit the ground</b> — spot of the touch, last team in possession keeps it (unless it was 3rd down and short). A dropped lateral is a fumble. Exception: kickoffs and punts (see above).</li>
+<li><b>Fumbles and backward passes are dead when they hit the ground</b> — spot of the touch, the team that had it keeps it and the down still counts (a 3rd-down fumble short of the line is a turnover on downs). A dropped lateral is a fumble. Exception: kickoffs and punts (see above).</li>
 <div class="house"><em>How we call it</em> <b>A lateral caught by the defense in the air is a legal turnover</b> (confirmed by the head ref) — technically a fumble recovery, but the ball never touched the ground, so it's live. Let them run it back; don't blow it dead.</div>
 <li>Unlimited hand-offs and laterals behind the line. <b>A hand-off behind the line ends the steamboat count</b> — the defense may rush immediately.</li>
-<li><b>Illegal forward pass</b> (play dead, 5 yd + loss of down from the spot): passer's entire body past the line · after a change of possession · second forward pass in a down · passer catches own untouched pass · any forward pass on a return play · thrown away behind the line to avoid loss (intentional grounding).</li>
+<li><b>Illegal forward pass</b> (play dead, 5 yd + loss of down from the spot of the pass): passer's entire body past the line · after a change of possession · second forward pass in a down · passer catches own untouched pass · any forward pass on a return play. <b>Intentional grounding</b> (thrown away to avoid a loss) is also 5 yd + loss of down, but from the previous spot.</li>
 <li><b>Catch = control with one foot in bounds.</b> No two-feet or survive-the-ground test (not NFL rules). Receiver carried out mid-air by contact = complete, spotted where the ball was.</li>
 <li><b>Down:</b> any part of the body other than the feet touches the ground — <b>a hand counts</b> (not NFL rules).</li>
 <div class="house"><em>How we call it</em> <b>The ball touching the ground doesn't down the carrier.</b> If the carrier still has control of the ball (like college), only their body can down them — the ball scraping the turf is nothing. <b>Control is the test:</b> once the ball comes loose it's a fumble, and every fumble is dead where it lands.</div>
@@ -1052,7 +1074,7 @@
 <details><summary>Rushing the passer</summary><div class="body"><ul>
 <li><b>Open divisions:</b> only players who start the play behind the <b>rush line, 10 yards off the line of scrimmage</b>, may rush the snap-taker. Once the snap-taker crosses the line, laterals or hands off, anyone can play the ball.</li>
 <li><b>Women's and Mixed divisions:</b> rushers go after <b>5 steamboats</b>. <div class="house"><em>How we call it</em> <b>The rusher doesn't have to be the one counting</b> — the QB just needs to be able to hear the count.</div></li>
-<li>Rushers must be given a <b>clear straight path</b> to the QB; an offensive player who obstructs the rusher is blocking: <b>replay the down from the previous spot</b> (10 yd). Any other block is a different penalty — see Penalties.</li>
+<li>Rushers must be given a <b>clear straight path</b> to the QB; an offensive player who obstructs the rusher is blocking: <b>10 yards from the previous spot, replay the down</b>. Any other block is 5 yd + loss of down from the spot of the block — see Penalties.</li>
 <li>Illegal rushing: 5 yards.</li>
 </ul></div></details>
 
@@ -1073,9 +1095,9 @@
 <li><b>Stripping the ball</b> from the carrier's hands (defense). If the carrier keeps going, let the play finish and <b>add the 5 yards to the end of the run</b>.</li>
 </ul>
 <h4>5 yards + loss of down</h4><ul>
-<li><b>Illegal forward pass</b> (from the spot of the pass) · <b>Intentional grounding</b></li>
+<li><b>Illegal forward pass</b> (from the spot of the pass) · <b>Intentional grounding</b> (from the previous spot)</li>
 <li><b>Illegal touching</b> (normal play, <b>zero yards</b>) — a receiver who stepped out of bounds and came back in is first to touch a forward pass, unless a defender forced them out and they came straight back. Loss of down only. <b>On a kick or punt it is 5 yards from the spot of the foul</b> (no loss of down). See Scrimmage &amp; possession.</li>
-<li><b>Blocking (not the rusher)</b> — a spot foul: <b>5 yards from the spot of the block + loss of down</b>, like a ball-carrier foul. (Blocking the rusher is the 10-yard replay below.)</li>
+<li><b>Blocking (not the rusher)</b> — <b>5 yards from the spot of the block + loss of down</b>: the same penalty as a ball-carrier foul, but marked from where the block happened, not the end of the run. (Blocking the rusher is the 10-yard replay below.)</li>
 <li><b>Illegal run inside the 5</b> — a hand-off or QB scramble inside the 5 (the book's "rush penalty")</li>
 <li><b>Ball-carrier fouls</b> — <b>flag guarding</b> (hand/arm or ball over the belt, dropping a shoulder to cover the flag) · <b>spinning</b> · <b>hurdling or leaping</b> · lowering the head or shoulder. Any ball-carrier infraction is 5 and loss of down.</li>
 <div class="house"><em>How we call it</em> <b>Ball-carrier fouls are spot fouls, assessed from the end of the run.</b> Let the play finish, then mark 5 back from where the carrier was downed. If the run crossed the first-down marker it is <b>still a first down: 1st &amp; 10 from the new spot</b>, 5 back from the end of the run (the loss of down doesn't matter — the series is over anyway).</div>
@@ -1085,14 +1107,14 @@
 <li><b>Offensive pass interference (loss of down)</b></li>
 <li><b>Defensive pass interference — 10 yards from the previous spot + automatic first down.</b> Not a spot foul. No PI if the ball is uncatchable, or after any eligible receiver has touched it. Tangled feet alone isn't PI; tripping from behind is; face-guarding is. Incidental contact while both play the ball is not PI.</li>
 <div class="house"><em>How we call it</em> <b>Ripping at the ball on a catch:</b> while the receiver is still bobbling it or hasn't secured it, the defender may play the ball — brushing the hands or arm on the way in is fine, as long as they aren't early. <b>Once the receiver has control it's a catch,</b> and any further ripping or excessive contact is <b>unnecessary roughness</b>. Arriving before the ball is PI.</div>
-<li>Holding (grasping/encircling) · Illegal use of hands · Illegal contact · Blocking <b>the rusher</b> (from the previous spot, replay the down) · Clipping · Tripping · Pyramiding (using a teammate to get height)</li>
+<li>Holding (grasping/encircling) · Illegal use of hands · Illegal contact · Blocking <b>the rusher</b> (from the previous spot, replay the down — not a loss of down) · Clipping · Tripping · Pyramiding (using a teammate to get height)</li>
 <li><b>Roughing the passer (automatic first down)</b> · Contacting the kicker (not if pushed into them by the kicking team, or slight incidental contact on a block attempt)</li>
 <li>Unsportsmanlike conduct · Obstruction/interference · Personal foul · Unnecessary roughness · Illegal equipment · Illegally secured flag belt</li>
 </ul></div></details>
 
 <details><summary>Enforcement &amp; ejections</summary><div class="body"><ul>
-<li><b>Running play:</b> mark off from the end of the run — except an offensive foul behind the end of the run, marked from the spot of the foul. Ball-carrier fouls (flag guarding, spinning, hurdling) and stripping are enforced from the end of the run; a block away from the rusher is marked from the spot of the block; a run past the marker is still a first down, 1st &amp; 10.</li>
-<li><b>Ball in flight:</b> from the previous spot.</li>
+<li><b>Running play:</b> mark off from the end of the run — except an offensive foul behind the end of the run, marked from the spot of the foul. Ball-carrier fouls (flag guarding, spinning, hurdling) and stripping are enforced from the end of the run; a run past the marker is still a first down, 1st &amp; 10. <b>A block away from the rusher is marked from the spot of the block</b> (5 yd + loss of down). Blocking the rusher: replay the down from the previous spot.</li>
+<li><b>Ball in flight:</b> from the previous spot — except an illegal forward pass (spot of the pass) and a block away from the rusher (spot of the block).</li>
 <li><b>Half the distance</b> when a 10-yard penalty would be inside the offender's 20, or a 5-yard penalty inside their 10.</li>
 <li><b>Double foul</b> (both teams, no change of possession): net the yardage and replay the down at the new spot.</li>
 <li>Repeated defensive fouls near the goal line to burn clock → officials may award the touchdown.</li>
@@ -1115,10 +1137,10 @@
         ${errs}
       </div>
       <div class="stack">
-        <button class="btn" data-act="retrySync">Retry cloud save now</button>
-        <button class="btn" data-act="copyBackup">Copy backup of everything</button>
-        <button class="btn" data-act="importBackup">Import a backup</button>
-        <button class="btn ghost" data-act="reloadApp">Reload app</button>
+        <button class="btn" data-act="retrySync">${ic('cloud')}Retry cloud save now</button>
+        <button class="btn" data-act="copyBackup">${ic('copy')}Copy backup of everything</button>
+        <button class="btn" data-act="importBackup">${ic('download')}Import a backup</button>
+        <button class="btn ghost" data-act="reloadApp">${ic('refresh')}Reload app</button>
       </div>
       <button class="link" data-act="close">Close</button>`);
   }
